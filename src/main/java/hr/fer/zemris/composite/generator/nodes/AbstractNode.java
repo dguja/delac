@@ -2,6 +2,13 @@ package hr.fer.zemris.composite.generator.nodes;
 
 import java.util.List;
 
+/**
+ * Apstraktni čvor
+ * 
+ * @author Daniel
+ *
+ */
+
 public abstract class AbstractNode {
 
   protected List<AbstractNode> parents;
