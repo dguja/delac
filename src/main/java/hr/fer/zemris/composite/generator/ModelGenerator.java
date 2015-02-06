@@ -11,21 +11,31 @@ import java.util.Map;
 
 public class ModelGenerator {
 
-  private int modelCount;
+  private final int modelCount;
 
-  private Map<String, IDiscreteDistribution> discreteParameters;
+  private final Map<String, IDiscreteDistribution> discreteDistributions;
 
-  private Map<String, IRealDistribution> realParameters;
+  private final Map<String, IRealDistribution> realDistributions;
+
+  public ModelGenerator(final int modelCount, final Map<String, IDiscreteDistribution> discreteDistributions,
+      final Map<String, IRealDistribution> realDistributions) {
+    super();
+
+    this.modelCount = modelCount;
+    this.discreteDistributions = discreteDistributions;
+    this.realDistributions = realDistributions;
+  }
 
   public List<Model> generate() {
-    final int n = discreteParameters.get("d1").sample();
+    // 1
+    final int n = discreteDistributions.get("d1").sample();
 
     final List<InputNode> inputs = new ArrayList<>();
     for (int i = 0; i < n; i++) {
-      inputs.add(new InputNode(realParameters.get("p1").sample()));
+      inputs.add(new InputNode(realDistributions.get("p1").sample()));
     }
 
-    final IDiscreteDistribution distM = new DiscreteDistributionLimiter(discreteParameters.get("d2"), 0, n + 1);
+    final IDiscreteDistribution distM = new DiscreteDistributionLimiter(discreteDistributions.get("d2"), 0, n + 1);
 
     final List<Model> models = new ArrayList<>();
     for (int i = 0; i < modelCount; i++) {
@@ -35,7 +45,9 @@ public class ModelGenerator {
     return models;
   }
 
-  private Model generateModel(final List<InputNode> inputs, final IDiscreteDistribution distM) {
+  private Model generateModel(final List<InputNode> datasetInputs, final IDiscreteDistribution distM) {
+    // 2
+    final List<AbstractNode> inputs = new ArrayList<>();
 
     return null; // TODO
 
