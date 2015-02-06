@@ -11,7 +11,7 @@ import java.util.List;
 
 public abstract class AbstractNode {
 
-  private long id;
+  protected long id;
 
   protected double reliability;
 
@@ -29,6 +29,13 @@ public abstract class AbstractNode {
     super();
 
     this.reliability = reliability;
+  }
+
+  protected AbstractNode(long id, double reliability, double weight) {
+    super();
+    this.id = id;
+    this.reliability = reliability;
+    this.weight = weight;
   }
 
   public long getId() {
