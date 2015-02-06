@@ -1,4 +1,4 @@
-package hr.fer.zemris.composite.generator.distribution;
+package hr.fer.zemris.composite.generator.random;
 
 import java.util.Random;
 

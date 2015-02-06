@@ -4,6 +4,7 @@ import hr.fer.zemris.composite.generator.distribution.DiscreteDistributionLimite
 import hr.fer.zemris.composite.generator.distribution.IDiscreteDistribution;
 import hr.fer.zemris.composite.generator.distribution.IRealDistribution;
 import hr.fer.zemris.composite.generator.nodes.InputNode;
+import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +14,19 @@ public class ModelGenerator {
 
   private final int modelCount;
 
+  private final boolean copyInputs;
+
   private final Map<String, IDiscreteDistribution> discreteDistributions;
 
   private final Map<String, IRealDistribution> realDistributions;
 
-  public ModelGenerator(final int modelCount, final Map<String, IDiscreteDistribution> discreteDistributions,
+  public ModelGenerator(final int modelCount, final boolean copyInputs,
+      final Map<String, IDiscreteDistribution> discreteDistributions,
       final Map<String, IRealDistribution> realDistributions) {
     super();
 
     this.modelCount = modelCount;
+    this.copyInputs = copyInputs;
     this.discreteDistributions = discreteDistributions;
     this.realDistributions = realDistributions;
   }
@@ -47,7 +52,14 @@ public class ModelGenerator {
 
   private Model generateModel(final List<InputNode> datasetInputs, final IDiscreteDistribution distM) {
     // 2
-    final List<AbstractNode> inputs = new ArrayList<>();
+    final List<InputNode> inputs = RandomUtilities.choose(datasetInputs, distM.sample());
+    if (copyInputs) {
+      for (int i = 0; i < inputs.size(); i++) {
+        inputs.set(i, inputs.get(i).clone());
+      }
+    }
+
+    //
 
     return null; // TODO
 

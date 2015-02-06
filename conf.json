@@ -1,5 +1,6 @@
 {
 	"modelCount": 10,
+	"copyInputs": false,
 	"discreteDistributions": [
 		{
 			"name": "d1",

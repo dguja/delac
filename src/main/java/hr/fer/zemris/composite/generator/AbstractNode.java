@@ -31,11 +31,12 @@ public abstract class AbstractNode {
     this.reliability = reliability;
   }
 
-  protected AbstractNode(long id, double reliability, double weight) {
+  protected AbstractNode(final AbstractNode other) {
     super();
-    this.id = id;
-    this.reliability = reliability;
-    this.weight = weight;
+
+    this.id = other.id;
+    this.reliability = other.reliability;
+    this.weight = other.weight;
   }
 
   public long getId() {
