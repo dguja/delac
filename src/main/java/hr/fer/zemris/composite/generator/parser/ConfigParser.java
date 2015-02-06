@@ -44,9 +44,10 @@ public class ConfigParser {
     JsonParser parser = new JsonParser();
     JsonObject root = parser.parse(json).getAsJsonObject();
     int modelCount = root.get("modelCount").getAsInt();
+    
+    boolean copyInputs = root.get("copyInputs").getAsBoolean();
+    
     JsonArray discreteDistributions = root.get("discreteDistributions").getAsJsonArray();
-    JsonArray realDistributions = root.get("realDistributions").getAsJsonArray();
-
     for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
       JsonObject current = discreteDistributions.get(i).getAsJsonObject();
       String name = current.get("name").getAsString();
@@ -62,6 +63,7 @@ public class ConfigParser {
       }
     }
 
+    JsonArray realDistributions = root.get("realDistributions").getAsJsonArray();
     for (int i = 0, size = realDistributions.size(); i < size; i++) {
       JsonObject current = realDistributions.get(i).getAsJsonObject();
       String name = current.get("name").getAsString();
@@ -81,7 +83,7 @@ public class ConfigParser {
       if (type.equals("normal")) {
         int a = parameters.get("a").getAsInt();
         double d = parameters.get("d").getAsDouble();
-
+        
         IRealDistribution dist;
         dist = new RealDistributionAdapter(new NormalDistribution(a, d));
         if (range != null) {
@@ -90,7 +92,7 @@ public class ConfigParser {
         realDistributionsMap.put(name, dist);
       }
     }
-    return new ModelGenerator(modelCount, discreteDistributionsMap, realDistributionsMap);
+    return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap, realDistributionsMap);
   }
 
 }
