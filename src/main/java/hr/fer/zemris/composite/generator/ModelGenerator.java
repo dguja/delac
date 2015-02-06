@@ -40,26 +40,30 @@ public class ModelGenerator {
       inputs.add(new InputNode(realDistributions.get("p1").sample()));
     }
 
-    final IDiscreteDistribution distM = new DiscreteDistributionLimiter(discreteDistributions.get("d2"), 0, n + 1);
+    final IDiscreteDistribution distributionM =
+        new DiscreteDistributionLimiter(discreteDistributions.get("d2"), 0, n + 1);
 
     final List<Model> models = new ArrayList<>();
     for (int i = 0; i < modelCount; i++) {
-      models.add(generateModel(inputs, distM));
+      models.add(generateModel(inputs, distributionM));
     }
 
     return models;
   }
 
-  private Model generateModel(final List<InputNode> datasetInputs, final IDiscreteDistribution distM) {
+  private Model generateModel(final List<InputNode> datasetInputs, final IDiscreteDistribution distributionM) {
     // 2
-    final List<InputNode> inputs = RandomUtilities.choose(datasetInputs, distM.sample());
+    final List<InputNode> inputs = RandomUtilities.choose(datasetInputs, distributionM.sample());
     if (copyInputs) {
       for (int i = 0; i < inputs.size(); i++) {
         inputs.set(i, inputs.get(i).clone());
       }
     }
 
-    //
+    // 3
+    final int k = discreteDistributions.get("d3").sample();
+
+    // 4
 
     return null; // TODO
 

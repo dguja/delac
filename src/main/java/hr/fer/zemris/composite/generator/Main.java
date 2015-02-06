@@ -12,11 +12,10 @@ public class Main {
 
   private static String CONFIG_FILE = "config.json";
 
-  public static void main(String[] args) throws IOException {
-    Path path = Paths.get(CONFIG_FILE);
-    String json = new String (Files.readAllBytes(path), StandardCharsets.UTF_8);
-    
-    ModelGenerator generator = ConfigParser.parse(json);
-    
+  public static void main(final String[] args) throws IOException {
+    final Path path = Paths.get(CONFIG_FILE);
+    final String json = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+
+    final ModelGenerator generator = ConfigParser.parse(json);
   }
 }
