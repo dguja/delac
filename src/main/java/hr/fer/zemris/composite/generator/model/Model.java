@@ -1,7 +1,7 @@
-package hr.fer.zemris.composite.generator;
+package hr.fer.zemris.composite.generator.model;
 
-import hr.fer.zemris.composite.generator.nodes.InputNode;
-import hr.fer.zemris.composite.generator.nodes.OutputNode;
+import hr.fer.zemris.composite.generator.model.nodes.InputNode;
+import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 
 import java.util.List;
 

@@ -1,6 +1,5 @@
-package hr.fer.zemris.composite.generator.parser;
+package hr.fer.zemris.composite.generator;
 
-import hr.fer.zemris.composite.generator.ModelGenerator;
 import hr.fer.zemris.composite.generator.distribution.DiscreteDistributionAdapter;
 import hr.fer.zemris.composite.generator.distribution.IDiscreteDistribution;
 import hr.fer.zemris.composite.generator.distribution.IRealDistribution;

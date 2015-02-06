@@ -1,7 +1,5 @@
 package hr.fer.zemris.composite.generator;
 
-import hr.fer.zemris.composite.generator.parser.ConfigParser;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
