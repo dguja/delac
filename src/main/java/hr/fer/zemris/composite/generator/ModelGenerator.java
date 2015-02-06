@@ -7,35 +7,30 @@ import hr.fer.zemris.composite.generator.nodes.InputNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ModelGenerator {
 
-  /**
-   * N - distribucija odabira broja atomarnih komponenti
-   */
-  private IDiscreteDistribution distD1;
+  private int modelCount;
 
-  /**
-   * M - distribucija odabira atomarnih komponenti koje sudjeluju u izgradnji modela
-   */
-  private IDiscreteDistribution distD2;
+  private Map<String, IDiscreteDistribution> discreteParameters;
 
-  /**
-   * P1 - distribucija odabira početne pouzdanosti čvora
-   */
-  private IRealDistribution distP1;
+  private Map<String, IRealDistribution> realParameters;
 
   public List<Model> generate() {
-    final int n = distD1.sample();
+    final int n = discreteParameters.get("d1").sample();
 
     final List<InputNode> inputs = new ArrayList<>();
     for (int i = 0; i < n; i++) {
-      inputs.add(new InputNode(distP1.sample()));
+      inputs.add(new InputNode(realParameters.get("p1").sample()));
     }
 
-    final IDiscreteDistribution distM = new DiscreteDistributionLimiter(distD2, 0, n + 1);
+    final IDiscreteDistribution distM = new DiscreteDistributionLimiter(discreteParameters.get("d2"), 0, n + 1);
 
     final List<Model> models = new ArrayList<>();
+    for (int i = 0; i < modelCount; i++) {
+      models.add(generateModel(inputs, distM));
+    }
 
     return models;
   }
@@ -43,5 +38,7 @@ public class ModelGenerator {
   private Model generateModel(final List<InputNode> inputs, final IDiscreteDistribution distM) {
 
     return null; // TODO
+
   }
+
 }
