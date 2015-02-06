@@ -1,0 +1,28 @@
+{
+	modelCount: 10,
+	discreteParameters: [
+		{
+			name: d1,
+			distribution: {
+				type: binomial,
+				parameters: {
+					n: 50,
+					p: .5
+				}
+			}
+		}
+	],
+	realParameters: [
+		{
+			name: p1,
+			distribution: {
+				type: normal,
+				range: [0, 1]
+				parameters: {
+					a: .5,
+					d: 1
+				}
+			}
+		}
+	]
+}
