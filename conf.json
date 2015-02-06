@@ -1,6 +1,6 @@
 {
 	"modelCount": 10,
-	"discreteParameters": [
+	"discreteDistributions": [
 		{
 			"name": "d1",
 			"distribution": {
@@ -12,7 +12,7 @@
 			}
 		}
 	],
-	"realParameters": [
+	"realDistributions": [
 		{
 			"name": "p1",
 			"distribution": {
