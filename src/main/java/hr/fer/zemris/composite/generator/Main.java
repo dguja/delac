@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 public class Main {
 
-  private static String CONFIG_FILE = "config.json";
+  private static String CONFIG_FILE = "conf.json";
 
   public static void main(final String[] args) throws IOException {
     final Path path = Paths.get(CONFIG_FILE);
