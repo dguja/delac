@@ -10,7 +10,6 @@ import hr.fer.zemris.composite.generator.model.nodes.InputNode;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
