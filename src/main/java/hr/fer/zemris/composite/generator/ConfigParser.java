@@ -6,6 +6,7 @@ import hr.fer.zemris.composite.generator.distribution.IDiscreteDistribution;
 import hr.fer.zemris.composite.generator.distribution.IRealDistribution;
 import hr.fer.zemris.composite.generator.distribution.RealDistributionAdapter;
 import hr.fer.zemris.composite.generator.distribution.RealDistributionLimiter;
+import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.Map;
 import org.apache.commons.math3.distribution.AbstractIntegerDistribution;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import com.google.gson.JsonArray;
@@ -25,7 +28,9 @@ import com.google.gson.JsonParser;
  * Podržani tipovi distribucija:
  * <ul>
  * <li>binomial</li>
+ * <li>enumerated</li>
  * <li>normal</li>
+ * <li>exponential</li>
  * </ul>
  * 
  * @author Mislav Magerl
@@ -45,9 +50,9 @@ public class ConfigParser {
     final Map<String, IRealDistribution> realDistributionsMap = new HashMap<>();
 
     final JsonParser parser = new JsonParser();
-    
+
     final JsonObject root = parser.parse(json).getAsJsonObject();
-    
+
     final int modelCount = root.get("modelCount").getAsInt();
 
     final boolean copyInputs = root.get("copyInputs").getAsBoolean();
@@ -61,45 +66,17 @@ public class ConfigParser {
     final JsonArray realDistributions = root.get("realDistributions").getAsJsonArray();
     for (int i = 0, size = realDistributions.size(); i < size; i++) {
       final JsonObject current = realDistributions.get(i).getAsJsonObject();
-      
+
       putRealDistribution(realDistributionsMap, current);
     }
-    
+
     IRealDistribution p1 = realDistributionsMap.get("p1");
-    for (int i = 0; i < 100; i++){
+    for (int i = 0; i < 100; i++) {
       System.out.println(p1.sample());
     }
-    
+
     return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap,
         realDistributionsMap);
-  }
-
-  private static void putRealDistribution(
-      final Map<String, IRealDistribution> realDistributionsMap, final JsonObject current) {
-    final String name = current.get("name").getAsString();
-    
-    final JsonObject distribution = current.get("distribution").getAsJsonObject();
-    final String type = distribution.get("type").getAsString();
-
-    Bound bound = null;
-    if (distribution.has("range")) {
-      JsonArray range = distribution.get("range").getAsJsonArray();
-      bound = new Bound(range.get(0).getAsInt(), range.get(1).getAsInt());
-    }
-
-    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
-    switch (type) {
-      case "normal":
-        final int a = parameters.get("a").getAsInt();
-        final double d = parameters.get("d").getAsDouble();
-
-        IRealDistribution dist =
-            wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d),
-                bound);
-        realDistributionsMap.put(name, dist);
-        break;
-    // default: exception
-    }
   }
 
   private static void putDiscreteDistribution(
@@ -115,19 +92,89 @@ public class ConfigParser {
     }
 
     final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
-
+    IDiscreteDistribution dist = null;
     switch (type) {
-      case "binomial":
+      case "binomial": {
         final int n = parameters.get("n").getAsInt();
         final double p = parameters.get("p").getAsDouble();
 
-        IDiscreteDistribution dist =
-            wrapDiscreteDistribution(
-                new BinomialDistribution(RandomProvider.getGenerator(), n, p), bound);
-        discreteDistributionsMap.put(name, dist);
+        dist =
+            wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p),
+                bound);
         break;
-    // default: exception
+      }
+      case "enumerated": {
+
+        final JsonArray vArray = parameters.get("v").getAsJsonArray();
+        final int[] v = new int[vArray.size()];
+        fillIntArray(vArray, v);
+
+        final JsonArray pArray = parameters.get("p").getAsJsonArray();
+        final double[] p = new double[pArray.size()];
+        fillDoubleArray(pArray, p);
+
+        dist =
+            wrapDiscreteDistribution(
+                new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
+        break;
+      }
+      default: {
+        throw new ParseException("Distribution type not supported: " + type);
+      }
     }
+    discreteDistributionsMap.put(name, dist);
+  }
+
+  private static void fillIntArray(final JsonArray vArray, final int[] v) {
+    for (int i = 0, size = vArray.size(); i < size; i++) {
+      v[i] = vArray.get(i).getAsInt();
+    }
+  }
+
+  private static void fillDoubleArray(final JsonArray pArray, final double[] p) {
+    for (int i = 0, size = pArray.size(); i < size; i++) {
+      p[i] = pArray.get(i).getAsDouble();
+    }
+  }
+
+  private static void putRealDistribution(
+      final Map<String, IRealDistribution> realDistributionsMap, final JsonObject current) {
+    final String name = current.get("name").getAsString();
+
+    final JsonObject distribution = current.get("distribution").getAsJsonObject();
+    final String type = distribution.get("type").getAsString();
+
+    Bound bound = null;
+    if (distribution.has("range")) {
+      JsonArray range = distribution.get("range").getAsJsonArray();
+      bound = new Bound(range.get(0).getAsInt(), range.get(1).getAsInt());
+    }
+
+    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
+    IRealDistribution dist = null;
+    switch (type) {
+      case "normal": {
+        final int a = parameters.get("a").getAsInt();
+        final double d = parameters.get("d").getAsDouble();
+
+        dist =
+            wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
+        break;
+      }
+      case "exponential": {
+        final double lambda = parameters.get("lambda").getAsDouble();
+
+        dist =
+            wrapRealDistribution(
+                new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
+
+        break;
+      }
+      default: {
+        throw new ParseException("Distribution type not supported: " + type);
+      }
+    }
+    realDistributionsMap.put(name, dist);
   }
 
   private static IDiscreteDistribution wrapDiscreteDistribution(

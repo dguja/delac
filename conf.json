@@ -12,6 +12,16 @@
 				}
 			}
 		}
+		{
+			"name": "enumerated",
+			"distribution": {
+				"type": "enumerated",
+				"parameters": {
+					"v": [50, 10],
+					"p": [0.8, 0.3]
+				}
+			}
+		}
 	],
 	"realDistributions": [
 		{
@@ -22,6 +32,16 @@
 				"parameters": {
 					"a": 0.5,
 					"d": 1
+				}
+			}
+		}
+		{
+			"name": "expo",
+			"distribution": {
+				"type": "exponential",
+				"range": [0, 1],
+				"parameters": {
+					"lambda" : 0.5
 				}
 			}
 		}
