@@ -1,5 +1,7 @@
 package hr.fer.zemris.composite.generator.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,7 +11,12 @@ import java.util.List;
  * 
  */
 
-public abstract class AbstractNode {
+public abstract class AbstractNode implements Serializable {
+
+  /**
+   * Generated serial version ID.
+   */
+  private static final long serialVersionUID = 4195003577285391138L;
 
   protected long id;
 
@@ -17,9 +24,9 @@ public abstract class AbstractNode {
 
   protected double weight;
 
-  protected List<AbstractNode> parents;
+  protected List<AbstractNode> parents = new ArrayList<>();
 
-  protected List<AbstractNode> children;
+  protected List<AbstractNode> children = new ArrayList<>();
 
   public AbstractNode(final long id) {
     super();
@@ -41,9 +48,13 @@ public abstract class AbstractNode {
     this.reliability = other.reliability;
     this.weight = other.weight;
   }
-
+  
   public long getId() {
     return id;
+  }
+  
+  public void setId(long id) {
+    this.id = id;
   }
 
   public List<AbstractNode> getParents() {
@@ -58,10 +69,18 @@ public abstract class AbstractNode {
     return reliability;
   }
 
-  protected void setReliability(final double reliability) {
+  public void setReliability(final double reliability) {
     this.reliability = reliability;
   }
 
+  public double getWeight() {
+    return weight;
+  }
+
+  public void setWeight(double weight) {
+    this.weight = weight;
+  }
+  
   @Override
   public int hashCode() {
     return 31 + (int) (id ^ (id >>> 32));

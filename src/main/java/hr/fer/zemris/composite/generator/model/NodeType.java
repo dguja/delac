@@ -15,6 +15,12 @@ public enum NodeType {
     return "d" + (index + 4);
   }
 
+  /**
+   * TODO
+   * NAPOMENA stvara se cvor kojemu nije postavljen ID
+   * 
+   * @return
+   */
   public AbstractNode newInstance() {
     switch (this) {
       case BRANCH:
