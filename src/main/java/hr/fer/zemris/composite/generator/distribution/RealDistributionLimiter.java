@@ -12,6 +12,8 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  */
 public class RealDistributionLimiter extends AbstractRealDistribution {
 
+  private static final long serialVersionUID = 3869285722225751711L;
+
   private final RealDistribution distribution;
 
   private final double leftBound;
