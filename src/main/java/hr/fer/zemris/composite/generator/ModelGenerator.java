@@ -6,6 +6,7 @@ import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.Model;
 import hr.fer.zemris.composite.generator.model.NodeType;
 import hr.fer.zemris.composite.generator.model.nodes.InputNode;
+import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
@@ -81,8 +82,8 @@ public class ModelGenerator {
       levelEdges.add(new HashMap<AbstractNode, Integer>());
     }
 
+    List<AbstractNode> nodes = null;
     for (int i = 0; i < k - 1; i++) {
-      List<AbstractNode> nodes = null;
       if (i == 0) {
         nodes = inputs;
       } else {
@@ -93,7 +94,25 @@ public class ModelGenerator {
         nodes = connectNodes(nodes, i, k, levelEdges, previousLevelNodes);
       }
       // 4, 5
-      createEdges(nodes, i, k, levelEdges);
+      /*
+       * ako je na k - 2 razini, to je razina neposredno ispod izlaznog cvora, a oni svi moraju biti
+       * jednom vezom povezani s izlaznim cvorom pa nije potrebno generirati veze
+       */
+      if (i != k - 2) {
+        createEdges(nodes, i, k, levelEdges);
+      }
+    }
+
+    // 8
+    OutputNode output = new OutputNode(nextId());
+    // sve s K - 2 razine povezi s izlaznim jednom vezom
+    for (int i = nodes.size(); i >= 0; i--) {
+      nodes.get(i).getChildren().add(output);
+      output.getParents().add(nodes.get(i));
+    }
+    for (AbstractNode parent : levelEdges.get(k - 1).keySet()) {
+      parent.getChildren().add(output);
+      output.getParents().add(parent);
     }
 
     return null; // TODO
@@ -121,16 +140,31 @@ public class ModelGenerator {
         case 2:
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
           for (final AbstractNode parent : parents.keySet()) {
-            int nodesToChoose = l;
-            final List<AbstractNode> children = new LinkedList<>(nodes);
-            for (int i = parents.get(parent); i >= 0; i--) {
-              final AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(nodesToChoose--));
-              child.getParents().add(parent);
-              parent.getChildren().add(child);
+            int nodesToChoose = RandomProvider.getRandom().nextInt(parents.get(parent));
+            List<AbstractNode> choosed = RandomUtilities.choose(nodes, nodesToChoose);
+            for (int i = 0; i < nodesToChoose; i++) {
+              choosed.get(i).getParents().add(parent);
+              parent.getChildren().add(choosed.get(i));
             }
           }
           break;
         case 3:
+          List<AbstractNode> candidates = new ArrayList<>();
+          for (AbstractNode parent : levelEdges.get(currentLevel).keySet()) {
+            for (int i = levelEdges.get(currentLevel).get(parent); i >= 0; i--) {
+              candidates.add(parent);
+            }
+          }
+          Set<AbstractNode> connected = new HashSet<>();
+          List<AbstractNode> choosed = RandomUtilities.choose(candidates, l);
+          for (int i = 0; i < l; i++) {
+            nodes.get(i).getParents().add(choosed.get(i));
+            choosed.get(i).getChildren().add(nodes.get(i));
+            connected.add(choosed.get(i));
+          }
+
+          // provjerit za cvorove koji nisu u connected je li imaju neku vezu prema gore, ako nemaju
+          // onda ih izbacit iz modela
 
       }
     } else {
@@ -150,20 +184,18 @@ public class ModelGenerator {
           break;
         case 2:
 
-          final Set<AbstractNode> newNodes = new HashSet<>();
+          final Set<AbstractNode> leftNodes = new HashSet<>();
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
           for (final AbstractNode parent : parents.keySet()) {
-            final List<AbstractNode> children = new LinkedList<>(nodes);
-            int numberOfNodes = l;
-            for (int i = 0; i < parents.get(parent); i++) {
-              final AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(numberOfNodes--));
-              child.getParents().add(parent);
-              parent.getChildren().add(child);
-              newNodes.add(child);
+            List<AbstractNode> choosed = RandomUtilities.choose(nodes, parents.get(parent));
+            for (int i = parents.get(parent); i >= 0; i--) {
+              leftNodes.add(choosed.get(i));
+              choosed.get(i).getParents().add(parent);
+              parent.getChildren().add(choosed.get(i));
             }
           }
           // vrati samo one koji imaju roditelja
-          return new ArrayList<>(newNodes);
+          return new ArrayList<>(leftNodes);
       }
     }
 
@@ -244,6 +276,7 @@ public class ModelGenerator {
   }
 
   private List<AbstractNode> createNodes(final int numberOfNodes) {
+
     final List<AbstractNode> nodes = new ArrayList<>(numberOfNodes);
 
     // sluzi za odabir tipa cvora, pogledati enum NodeType zasto su granice [1, 5>
