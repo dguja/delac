@@ -33,7 +33,7 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
     this.leftBound = leftBound;
     this.rightBound = rightBound;
 
-    this.leftSum = distribution.cumulativeProbability(leftBound);
+    this.leftSum = distribution.cumulativeProbability(leftBound) - distribution.probability(leftBound);
     this.sum = distribution.cumulativeProbability(rightBound) - leftSum;
   }
 
@@ -78,12 +78,12 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
 
   @Override
   public boolean isSupportLowerBoundInclusive() {
-    return true;
+    return leftBound != Double.NEGATIVE_INFINITY;
   }
 
   @Override
   public boolean isSupportUpperBoundInclusive() {
-    return true;
+    return rightBound != Double.POSITIVE_INFINITY;
   }
 
   @Override
