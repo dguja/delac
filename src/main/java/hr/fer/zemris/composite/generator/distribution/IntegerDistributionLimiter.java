@@ -1,7 +1,7 @@
 package hr.fer.zemris.composite.generator.distribution;
 
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.distribution.AbstractIntegerDistribution;
+import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 
 /**
@@ -10,21 +10,21 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * 
  * @author Antun Razum
  */
-public class RealDistributionLimiter extends AbstractRealDistribution {
+public class IntegerDistributionLimiter extends AbstractIntegerDistribution {
 
-  private static final long serialVersionUID = 3869285722225751711L;
+  private static final long serialVersionUID = 657037031392180138L;
 
-  private final RealDistribution distribution;
+  private final IntegerDistribution distribution;
 
-  private final double leftBound;
+  private final int leftBound;
 
-  private final double rightBound;
+  private final int rightBound;
 
   private final double sum;
 
   private final double leftSum;
 
-  public RealDistributionLimiter(final RealDistribution distribution, final double leftBound, final double rightBound) {
+  public IntegerDistributionLimiter(final IntegerDistribution distribution, final int leftBound, final int rightBound) {
     super(null);
 
     if (leftBound > rightBound) {
@@ -40,17 +40,12 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
   }
 
   @Override
-  public double density(final double x) {
-    return inRange(x) ? distribution.density(x) / sum : 0.;
-  }
-
-  @Override
-  public double cumulativeProbability(final double x) {
+  public double cumulativeProbability(final int x) {
     return inRange(x) ? (distribution.cumulativeProbability(x) - leftSum) / sum : 0;
   }
 
   @Override
-  public double inverseCumulativeProbability(final double p) throws OutOfRangeException {
+  public int inverseCumulativeProbability(final double p) throws OutOfRangeException {
     if (p < 0.0 || p > 1.0) {
       throw new OutOfRangeException(p, 0.0, 1.0);
     }
@@ -69,23 +64,13 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
   }
 
   @Override
-  public double getSupportLowerBound() {
+  public int getSupportLowerBound() {
     return leftBound;
   }
 
   @Override
-  public double getSupportUpperBound() {
+  public int getSupportUpperBound() {
     return rightBound;
-  }
-
-  @Override
-  public boolean isSupportLowerBoundInclusive() {
-    return leftBound != Double.NEGATIVE_INFINITY;
-  }
-
-  @Override
-  public boolean isSupportUpperBoundInclusive() {
-    return rightBound != Double.POSITIVE_INFINITY;
   }
 
   @Override
@@ -99,11 +84,11 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
   }
 
   @Override
-  public double probability(final double x) {
+  public double probability(final int x) {
     return inRange(x) ? distribution.probability(x) / sum : 0.;
   }
 
-  private boolean inRange(final double x) {
+  private boolean inRange(final int x) {
     return x >= leftBound && x <= rightBound;
   }
 
