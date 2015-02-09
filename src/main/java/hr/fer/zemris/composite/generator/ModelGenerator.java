@@ -43,7 +43,7 @@ public class ModelGenerator {
     this.realDistributions = realDistributions;
   }
 
-  public List<Model> generate() {
+  public Dataset generate() {
     // 1
     final int n = discreteDistributions.get("d1").sample();
 
@@ -60,7 +60,7 @@ public class ModelGenerator {
       models.add(generateModel(inputs, mDistribution));
     }
 
-    return models;
+    return new Dataset(models);
   }
 
   private Model generateModel(final List<InputNode> datasetInputs, final IDiscreteDistribution mDistribution) {
@@ -80,7 +80,7 @@ public class ModelGenerator {
       levelEdges.add(new HashMap<AbstractNode, Integer>());
     }
 
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < k - 1; i++) {
       List<AbstractNode> nodes = null;
       if (i == 0) {
         nodes = inputs;
@@ -94,6 +94,8 @@ public class ModelGenerator {
       // 4, 5
       createEdges(nodes, i, k, levelEdges);
     }
+    
+    
     return null; // TODO
 
   }
@@ -102,13 +104,13 @@ public class ModelGenerator {
       List<Map<AbstractNode, Integer>> levelEdges, List<AbstractNode> previousLevelNodes) {
 
     int l = nodes.size();
-    int p = calculateNumberOfEdges(levelEdges.get(currentLevel));
+    int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
 
     if (l == p) {
-      
+
       lEqualP(nodes, levelEdges, currentLevel, l);
     } else if (l < p) {
-      
+
       IDiscreteDistribution behaviorOfGenerator =
           new DiscreteDistributionLimiter(discreteDistributions.get("d12"), 0, 3);
       switch (behaviorOfGenerator.sample()) {
@@ -122,12 +124,6 @@ public class ModelGenerator {
             int nodesToChoose = l;
             List<AbstractNode> children = new LinkedList<>(nodes);
             for (int i = parents.get(parent); i >= 0; i--) {
-
-              // ako roditelj ima vise veza nego djece na koje se moze povezati, odbaci visak veza
-              if (i > l) {
-                i = l;
-              }
-
               AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(nodesToChoose--));
               child.getParents().add(parent);
               parent.getChildren().add(child);
@@ -138,12 +134,12 @@ public class ModelGenerator {
 
       }
     } else {
-      
+
       IDiscreteDistribution behaviorOfGenerator =
           new DiscreteDistributionLimiter(discreteDistributions.get("d13"), 0, 2);
       switch (behaviorOfGenerator.sample()) {
         case 1:
-          
+
           int sizeOfPreviousNodes = previousLevelNodes.size();
           // stvori novih l-p veza
           for (int i = l - p; i >= 0; i--) {
@@ -153,13 +149,13 @@ public class ModelGenerator {
           lEqualP(nodes, levelEdges, currentLevel, l);
           break;
         case 2:
-          
+
           Set<AbstractNode> newNodes = new HashSet<>();
           Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-          for(AbstractNode parent : parents.keySet()) {
+          for (AbstractNode parent : parents.keySet()) {
             List<AbstractNode> children = new LinkedList<>(nodes);
             int numberOfNodes = l;
-            for(int i = 0; i < parents.get(parent); i++) {
+            for (int i = 0; i < parents.get(parent); i++) {
               AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(numberOfNodes--));
               child.getParents().add(parent);
               parent.getChildren().add(child);
@@ -170,7 +166,7 @@ public class ModelGenerator {
           return new ArrayList<>(newNodes);
       }
     }
-    
+
     return nodes;
   }
 
@@ -197,10 +193,14 @@ public class ModelGenerator {
     }
   }
 
-  private int calculateNumberOfEdges(Map<AbstractNode, Integer> map) {
+  private int calculateNumberOfEdges(Map<AbstractNode, Integer> map, int numberOfChildrenNodes) {
     int counter = 0;
     for (AbstractNode node : map.keySet()) {
-      counter += map.get(node);
+      int numberOfEdges = map.get(node);
+      if(numberOfEdges > numberOfChildrenNodes) {
+        numberOfEdges = numberOfChildrenNodes;
+      }
+      counter += numberOfEdges;
     }
     return counter;
   }
@@ -229,6 +229,7 @@ public class ModelGenerator {
 
   /**
    * Stvara novu vezu.
+   * 
    * @param levelEdges lista koja cuva sve trenutne veze
    * @param targetLevel razina na koju pokazuje veza
    * @param node roditelj veze
@@ -249,8 +250,7 @@ public class ModelGenerator {
         new DiscreteDistributionLimiter(discreteDistributions.get("d10"), 1, 5);
 
     for (int i = 0; i < numberOfNodes; i++) {
-      AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance();
-      node.setId(nextId());
+      AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance(nextId());
       node.setReliability(realDistributions.get("p2").sample());
       node.setWeight(realDistributions.get("p3").sample());
       nodes.add(node);

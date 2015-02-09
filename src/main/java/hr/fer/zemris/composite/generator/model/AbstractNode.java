@@ -52,10 +52,6 @@ public abstract class AbstractNode implements Serializable {
   public long getId() {
     return id;
   }
-  
-  public void setId(long id) {
-    this.id = id;
-  }
 
   public List<AbstractNode> getParents() {
     return parents;

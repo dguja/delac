@@ -21,7 +21,7 @@ public enum NodeType {
    * 
    * @return
    */
-  public AbstractNode newInstance() {
+  public AbstractNode newInstance(long id) {
     switch (this) {
       case BRANCH:
         return null; // TODO
