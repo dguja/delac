@@ -7,18 +7,46 @@
 			"distribution": {
 				"type": "binomial",
 				"parameters": {
-					"n": 50,
-					"p": 0.5
+					"n" : 50,
+					"p" : 0.5
 				}
 			}
-		}
+		},
 		{
 			"name": "enumerated",
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v": [50, 10],
-					"p": [0.8, 0.3]
+					"v" : [50, 10],
+					"p" : [0.8, 0.3]
+				}
+			}
+		},
+		{
+			"name": "geometric",
+			"distribution": {
+				"type": "geometric",
+				"parameters": {
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "poisson",
+			"distribution": {
+				"type": "poisson",
+				"parameters": {
+					"lambda" : 0.5
+				}
+			}
+		},
+		{
+			"name": "uniform",
+			"distribution": {
+				"type": "uniform",
+				"parameters": {
+					"lower" : 0,
+					"upper" : 10
 				}
 			}
 		}
@@ -30,11 +58,11 @@
 				"type": "normal",
 				"range": [0, 1],
 				"parameters": {
-					"a": 0.5,
-					"d": 1
+					"a" : 0.5,
+					"d" : 1
 				}
 			}
-		}
+		},
 		{
 			"name": "expo",
 			"distribution": {
@@ -42,6 +70,26 @@
 				"range": [0, 1],
 				"parameters": {
 					"lambda" : 0.5
+				}
+			}
+		},
+		{
+			"name": "enumerated",
+			"distribution": {
+				"type": "enumerated",
+				"parameters": {
+					"v" : [50.4, 10],
+					"p" : [0.8, 0.3]
+				}
+			}
+		},
+		{
+			"name": "uniform",
+			"distribution": {
+				"type": "uniform",
+				"parameters": {
+					"lower" : 0,
+					"upper" : 10
 				}
 			}
 		}

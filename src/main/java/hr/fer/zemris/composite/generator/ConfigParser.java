@@ -12,10 +12,15 @@ import org.apache.commons.math3.distribution.AbstractIntegerDistribution;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+import org.apache.commons.math3.distribution.EnumeratedRealDistribution;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.apache.commons.math3.distribution.GeometricDistribution;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.distribution.UniformIntegerDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -23,12 +28,23 @@ import com.google.gson.JsonParser;
 
 /**
  * Razred koji parsira config.json datoteku formatiranu u dogovorenom formatu. <br>
- * Podržani tipovi distribucija:
+ * Podržani tipovi distribucija:<br>
+ * 
+ * diskretne:
  * <ul>
  * <li>binomial</li>
  * <li>enumerated</li>
+ * <li>geometric</li>
+ * <li>poisson</li>
+ * <li>uniform</li>
+ * </ul>
+ * <br>
+ * realne:
+ * <ul>
  * <li>normal</li>
  * <li>exponential</li>
+ * <li>enumerated</li>
+ * <li>uniform</li>
  * </ul>
  * 
  * @author Mislav Magerl
@@ -64,13 +80,7 @@ public class ConfigParser {
     final JsonArray realDistributions = root.get("realDistributions").getAsJsonArray();
     for (int i = 0, size = realDistributions.size(); i < size; i++) {
       final JsonObject current = realDistributions.get(i).getAsJsonObject();
-
       putRealDistribution(realDistributionsMap, current);
-    }
-
-    final RealDistribution p1 = realDistributionsMap.get("p1");
-    for (int i = 0; i < 100; i++) {
-      System.out.println(p1.sample());
     }
 
     return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap,
@@ -88,7 +98,7 @@ public class ConfigParser {
   private static double[] getDoubleArray(JsonArray jsonArray) {
     double[] array = new double[jsonArray.size()];
     for (int i = 0, size = jsonArray.size(); i < size; i++) {
-      array[i] = jsonArray.get(i).getAsInt();
+      array[i] = jsonArray.get(i).getAsDouble();
     }
     return array;
   }
@@ -98,34 +108,60 @@ public class ConfigParser {
     final String name = current.get("name").getAsString();
     final JsonObject distribution = current.get("distribution").getAsJsonObject();
     final String type = distribution.get("type").getAsString();
-  
+
     Bound bound = null;
     if (distribution.has("range")) {
       final JsonArray range = distribution.get("range").getAsJsonArray();
       bound = new Bound(range.get(0).getAsInt(), range.get(1).getAsInt());
     }
-  
+
     final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
     IntegerDistribution dist = null;
     switch (type) {
       case "binomial": {
         final int n = parameters.get("n").getAsInt();
         final double p = parameters.get("p").getAsDouble();
-  
+
         dist =
             wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p),
                 bound);
         break;
       }
       case "enumerated": {
-  
+
         final int[] v = getIntArray(parameters.get("v").getAsJsonArray());
-  
+
         final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
-  
+
         dist =
             wrapDiscreteDistribution(
                 new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
+        break;
+      }
+      case "geometric": {
+
+        final double p = parameters.get("p").getAsDouble();
+        dist =
+            wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p),
+                bound);
+        break;
+      }
+      case "poisson": {
+
+        final double lambda = parameters.get("lambda").getAsDouble();
+        dist =
+            wrapDiscreteDistribution(new PoissonDistribution(RandomProvider.getGenerator(), lambda,
+                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS),
+                bound);
+        break;
+      }
+      case "uniform": {
+
+        final int lower = parameters.get("lower").getAsInt();
+        final int upper = parameters.get("upper").getAsInt();
+        dist =
+            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(),
+                lower, upper), bound);
         break;
       }
       default: {
@@ -166,6 +202,26 @@ public class ConfigParser {
             wrapRealDistribution(
                 new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
 
+        break;
+      }
+      case "enumerated": {
+
+        final double[] v = getDoubleArray(parameters.get("v").getAsJsonArray());
+
+        final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
+
+        dist =
+            wrapRealDistribution(
+                new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
+        break;
+      }
+      case "uniform": {
+
+        final double lower = parameters.get("lower").getAsDouble();
+        final double upper = parameters.get("upper").getAsDouble();
+        dist =
+            wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower,
+                upper), bound);
         break;
       }
       default: {
