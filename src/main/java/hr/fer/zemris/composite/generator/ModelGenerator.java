@@ -2,6 +2,7 @@ package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.distribution.IntegerDistributionLimiter;
 import hr.fer.zemris.composite.generator.model.AbstractNode;
+import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.Model;
 import hr.fer.zemris.composite.generator.model.NodeType;
 import hr.fer.zemris.composite.generator.model.nodes.InputNode;
@@ -94,8 +95,7 @@ public class ModelGenerator {
       // 4, 5
       createEdges(nodes, i, k, levelEdges);
     }
-    
-    
+
     return null; // TODO
 
   }
@@ -103,15 +103,15 @@ public class ModelGenerator {
   private List<AbstractNode> connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
       final List<Map<AbstractNode, Integer>> levelEdges, final List<AbstractNode> previousLevelNodes) {
 
-    int l = nodes.size();
-    int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
+    final int l = nodes.size();
+    final int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
 
     if (l == p) {
 
       lEqualP(nodes, levelEdges, currentLevel, l);
     } else if (l < p) {
 
-      IntegerDistribution behaviorOfGenerator =
+      final IntegerDistribution behaviorOfGenerator =
           new IntegerDistributionLimiter(discreteDistributions.get("d12"), 0, 3);
       switch (behaviorOfGenerator.sample()) {
         case 1:
@@ -124,7 +124,7 @@ public class ModelGenerator {
             int nodesToChoose = l;
             final List<AbstractNode> children = new LinkedList<>(nodes);
             for (int i = parents.get(parent); i >= 0; i--) {
-              AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(nodesToChoose--));
+              final AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(nodesToChoose--));
               child.getParents().add(parent);
               parent.getChildren().add(child);
             }
@@ -135,12 +135,12 @@ public class ModelGenerator {
       }
     } else {
 
-      IntegerDistribution behaviorOfGenerator =
+      final IntegerDistribution behaviorOfGenerator =
           new IntegerDistributionLimiter(discreteDistributions.get("d13"), 0, 2);
       switch (behaviorOfGenerator.sample()) {
         case 1:
 
-          int sizeOfPreviousNodes = previousLevelNodes.size();
+          final int sizeOfPreviousNodes = previousLevelNodes.size();
           // stvori novih l-p veza
           for (int i = l - p; i >= 0; i--) {
             putEdgeInLevelEdges(levelEdges, currentLevel,
@@ -150,13 +150,13 @@ public class ModelGenerator {
           break;
         case 2:
 
-          Set<AbstractNode> newNodes = new HashSet<>();
-          Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-          for (AbstractNode parent : parents.keySet()) {
-            List<AbstractNode> children = new LinkedList<>(nodes);
+          final Set<AbstractNode> newNodes = new HashSet<>();
+          final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
+          for (final AbstractNode parent : parents.keySet()) {
+            final List<AbstractNode> children = new LinkedList<>(nodes);
             int numberOfNodes = l;
             for (int i = 0; i < parents.get(parent); i++) {
-              AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(numberOfNodes--));
+              final AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(numberOfNodes--));
               child.getParents().add(parent);
               parent.getChildren().add(child);
               newNodes.add(child);
@@ -193,11 +193,11 @@ public class ModelGenerator {
     }
   }
 
-  private int calculateNumberOfEdges(Map<AbstractNode, Integer> map, int numberOfChildrenNodes) {
+  private int calculateNumberOfEdges(final Map<AbstractNode, Integer> map, final int numberOfChildrenNodes) {
     int counter = 0;
-    for (AbstractNode node : map.keySet()) {
+    for (final AbstractNode node : map.keySet()) {
       int numberOfEdges = map.get(node);
-      if(numberOfEdges > numberOfChildrenNodes) {
+      if (numberOfEdges > numberOfChildrenNodes) {
         numberOfEdges = numberOfChildrenNodes;
       }
       counter += numberOfEdges;
@@ -251,7 +251,7 @@ public class ModelGenerator {
         new IntegerDistributionLimiter(discreteDistributions.get("d10"), 1, 5);
 
     for (int i = 0; i < numberOfNodes; i++) {
-      AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance(nextId());
+      final AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance(nextId());
       node.setReliability(realDistributions.get("p2").sample());
       node.setWeight(realDistributions.get("p3").sample());
       nodes.add(node);
