@@ -16,11 +16,8 @@ import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -127,10 +124,8 @@ public class ModelGenerator {
     final int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
 
     if (l == p) {
-
       lEqualP(nodes, levelEdges, currentLevel, l);
     } else if (l < p) {
-
       final IntegerDistribution behaviorOfGenerator = discreteDistributions.get("d12");
       switch (behaviorOfGenerator.sample()) {
         case 1:
@@ -138,42 +133,21 @@ public class ModelGenerator {
           lEqualP(nodes, levelEdges, currentLevel, p);
           break;
         case 2:
-          final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-          for (final AbstractNode parent : parents.keySet()) {
-            final int nodesToChoose = RandomProvider.getRandom().nextInt(parents.get(parent));
-            final List<AbstractNode> choosed = RandomUtilities.choose(nodes, nodesToChoose);
-            for (int i = 0; i < nodesToChoose; i++) {
-              choosed.get(i).getParents().add(parent);
-              parent.getChildren().add(choosed.get(i));
-            }
-          }
+          
+          // TODO
+          
           break;
         case 3:
-          final List<AbstractNode> candidates = new ArrayList<>();
-          for (final AbstractNode parent : levelEdges.get(currentLevel).keySet()) {
-            for (int i = levelEdges.get(currentLevel).get(parent); i >= 0; i--) {
-              candidates.add(parent);
-            }
-          }
-          final Set<AbstractNode> connected = new HashSet<>();
-          final List<AbstractNode> choosed = RandomUtilities.choose(candidates, l);
-          for (int i = 0; i < l; i++) {
-            nodes.get(i).getParents().add(choosed.get(i));
-            choosed.get(i).getChildren().add(nodes.get(i));
-            connected.add(choosed.get(i));
-          }
+          
+          // TODO
 
-          // provjerit za cvorove koji nisu u connected je li imaju neku vezu prema gore, ako nemaju
-          // onda ih izbacit iz modela
-
+          
       }
     } else {
-
       final IntegerDistribution behaviorOfGenerator =
           new IntegerDistributionLimiter(discreteDistributions.get("d13"), 0, 2);
       switch (behaviorOfGenerator.sample()) {
         case 1:
-
           final int sizeOfPreviousNodes = previousLevelNodes.size();
           // stvori novih l-p veza
           for (int i = l - p; i >= 0; i--) {
@@ -183,24 +157,22 @@ public class ModelGenerator {
           lEqualP(nodes, levelEdges, currentLevel, l);
           break;
         case 2:
-
-          final Set<AbstractNode> leftNodes = new HashSet<>();
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
+          final List<AbstractNode> choosed = RandomUtilities.choose(nodes, p);
+          int index = 0;
           for (final AbstractNode parent : parents.keySet()) {
-            final List<AbstractNode> choosed = RandomUtilities.choose(nodes, parents.get(parent));
             for (int i = parents.get(parent); i >= 0; i--) {
-              leftNodes.add(choosed.get(i));
-              choosed.get(i).getParents().add(parent);
-              parent.getChildren().add(choosed.get(i));
+              choosed.get(index).addParent(parent);
+              index++;
             }
           }
           // vrati samo one koji imaju roditelja
-          return new ArrayList<>(leftNodes);
+          return choosed;
       }
     }
-
     return nodes;
   }
+
 
   /**
    * Obraduje slucaj kada je L == P
@@ -214,13 +186,13 @@ public class ModelGenerator {
   private void lEqualP(final List<AbstractNode> nodes, final List<Map<AbstractNode, Integer>> levelEdges,
       final int currentLevel, int numberOfNodes) {
 
-    final List<AbstractNode> children = new LinkedList<>(nodes);
     final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-    for (final AbstractNode parent : parents.keySet()) {
-      for (int i = 0; i < parents.get(parent); i++) {
-        final AbstractNode child = children.remove(RandomProvider.getRandom().nextInt(numberOfNodes--));
-        child.getParents().add(parent);
-        parent.getChildren().add(child);
+    List<AbstractNode> choosed = RandomUtilities.choose(nodes, numberOfNodes);
+    int index = 0;
+    for(AbstractNode parent : parents.keySet()) {
+      for(int i = parents.get(parent); i >= 0; i--) {
+        choosed.get(index).addParent(parent);
+        index++;
       }
     }
   }
