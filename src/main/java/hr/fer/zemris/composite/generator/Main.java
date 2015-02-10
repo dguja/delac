@@ -2,13 +2,11 @@ package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.model.Dataset;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class Main {
 
@@ -17,15 +15,26 @@ public class Main {
   private static String OUTPUT_FILE = "output";
 
   public static void main(final String[] args) throws IOException {
-    final Path path = Paths.get(CONFIG_FILE);
-    final String json = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+    final ConfigParser parser = new ConfigParser();
 
-    final ModelGenerator generator = ConfigParser.parse(json);
+    final InputStream inputStream = new FileInputStream(CONFIG_FILE);
+
+    try {
+      parser.parse(inputStream);
+    } catch (final ParseException exception) {
+      System.err.println(exception.getMessage());
+      System.exit(1);
+    }
+
+    inputStream.close();
+
+    final ModelGenerator generator =
+        new ModelGenerator(parser.getModelCount(), parser.getCopyInputs(), parser.getDiscreteDistributions(),
+            parser.getRealDistributions());
 
     final Dataset dataset = generator.generate();
 
-    final ObjectOutputStream objectStream =
-        new ObjectOutputStream(new FileOutputStream(Paths.get(OUTPUT_FILE).toFile()));
+    final ObjectOutputStream objectStream = new ObjectOutputStream(new FileOutputStream(OUTPUT_FILE));
 
     objectStream.writeObject(dataset);
     objectStream.close();

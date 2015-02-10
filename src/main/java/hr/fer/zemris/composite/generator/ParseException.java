@@ -1,4 +1,4 @@
-package hr.fer.zemris.composite.generator.exception;
+package hr.fer.zemris.composite.generator;
 
 public class ParseException extends RuntimeException {
 

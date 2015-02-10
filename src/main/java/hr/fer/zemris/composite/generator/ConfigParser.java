@@ -2,9 +2,11 @@ package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.distribution.IntegerDistributionLimiter;
 import hr.fer.zemris.composite.generator.distribution.RealDistributionLimiter;
-import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -51,6 +54,8 @@ import com.google.gson.JsonParser;
  */
 public class ConfigParser {
 
+  private static final String ERROR_ROOT_PARAMETER = "Error while parsing root parameter.";
+
   /**
    * Vraća {@link ModelGenerator} popunjenog s podacima iz <code>json</code>a.
    * 
@@ -58,16 +63,16 @@ public class ConfigParser {
    * @param json JSON konfiguracijska datoteka generatora.
    * @return {@link ModelGenerator}
    */
-  public static ModelGenerator parse(final String json) {
+  public static ModelGenerator parse(final InputStream inputStream) {
     final Map<String, IntegerDistribution> discreteDistributionsMap = new HashMap<>();
 
     final Map<String, RealDistribution> realDistributionsMap = new HashMap<>();
 
     final JsonParser parser = new JsonParser();
 
-    final JsonObject root = parser.parse(json).getAsJsonObject();
+    final JsonObject root = parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).getAsJsonObject();
 
-    final int modelCount = root.get("modelCount").getAsInt();
+    final int modelCount = getInt(root, "modelCount", ERROR_ROOT_PARAMETER);
 
     final boolean copyInputs = root.get("copyInputs").getAsBoolean();
 
@@ -83,28 +88,27 @@ public class ConfigParser {
       putRealDistribution(realDistributionsMap, current);
     }
 
-    return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap,
-        realDistributionsMap);
+    return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap, realDistributionsMap);
   }
 
-  private static int[] getIntArray(JsonArray jsonArray) {
-    int[] array = new int[jsonArray.size()];
+  private static int[] getIntArray(final JsonArray jsonArray) {
+    final int[] array = new int[jsonArray.size()];
     for (int i = 0, size = jsonArray.size(); i < size; i++) {
       array[i] = jsonArray.get(i).getAsInt();
     }
     return array;
   }
 
-  private static double[] getDoubleArray(JsonArray jsonArray) {
-    double[] array = new double[jsonArray.size()];
+  private static double[] getDoubleArray(final JsonArray jsonArray) {
+    final double[] array = new double[jsonArray.size()];
     for (int i = 0, size = jsonArray.size(); i < size; i++) {
       array[i] = jsonArray.get(i).getAsDouble();
     }
     return array;
   }
 
-  private static void putDiscreteDistribution(
-      final Map<String, IntegerDistribution> discreteDistributionsMap, final JsonObject current) {
+  private static void putDiscreteDistribution(final Map<String, IntegerDistribution> discreteDistributionsMap,
+      final JsonObject current) {
     final String name = current.get("name").getAsString();
     final JsonObject distribution = current.get("distribution").getAsJsonObject();
     final String type = distribution.get("type").getAsString();
@@ -122,9 +126,7 @@ public class ConfigParser {
         final int n = parameters.get("n").getAsInt();
         final double p = parameters.get("p").getAsDouble();
 
-        dist =
-            wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p),
-                bound);
+        dist = wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p), bound);
         break;
       }
       case "enumerated": {
@@ -133,17 +135,13 @@ public class ConfigParser {
 
         final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
 
-        dist =
-            wrapDiscreteDistribution(
-                new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
+        dist = wrapDiscreteDistribution(new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
         break;
       }
       case "geometric": {
 
         final double p = parameters.get("p").getAsDouble();
-        dist =
-            wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p),
-                bound);
+        dist = wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p), bound);
         break;
       }
       case "poisson": {
@@ -151,8 +149,7 @@ public class ConfigParser {
         final double lambda = parameters.get("lambda").getAsDouble();
         dist =
             wrapDiscreteDistribution(new PoissonDistribution(RandomProvider.getGenerator(), lambda,
-                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS),
-                bound);
+                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS), bound);
         break;
       }
       case "uniform": {
@@ -160,8 +157,7 @@ public class ConfigParser {
         final int lower = parameters.get("lower").getAsInt();
         final int upper = parameters.get("upper").getAsInt();
         dist =
-            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(),
-                lower, upper), bound);
+            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(), lower, upper), bound);
         break;
       }
       default: {
@@ -191,16 +187,13 @@ public class ConfigParser {
         final int a = parameters.get("a").getAsInt();
         final double d = parameters.get("d").getAsDouble();
 
-        dist =
-            wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
+        dist = wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
         break;
       }
       case "exponential": {
         final double lambda = parameters.get("lambda").getAsDouble();
 
-        dist =
-            wrapRealDistribution(
-                new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
+        dist = wrapRealDistribution(new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
 
         break;
       }
@@ -210,18 +203,14 @@ public class ConfigParser {
 
         final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
 
-        dist =
-            wrapRealDistribution(
-                new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
+        dist = wrapRealDistribution(new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
         break;
       }
       case "uniform": {
 
         final double lower = parameters.get("lower").getAsDouble();
         final double upper = parameters.get("upper").getAsDouble();
-        dist =
-            wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower,
-                upper), bound);
+        dist = wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower, upper), bound);
         break;
       }
       default: {
@@ -231,20 +220,37 @@ public class ConfigParser {
     realDistributionsMap.put(name, dist);
   }
 
-  private static IntegerDistribution wrapDiscreteDistribution(
-      final AbstractIntegerDistribution distribution, final Bound bound) {
+  private static IntegerDistribution wrapDiscreteDistribution(final AbstractIntegerDistribution distribution,
+      final Bound bound) {
     if (bound == null) {
       return distribution;
     }
     return new IntegerDistributionLimiter(distribution, bound.getLeftBound(), bound.getRightBound());
   }
 
-  private static RealDistribution wrapRealDistribution(final AbstractRealDistribution distribution,
-      final Bound bound) {
+  private static RealDistribution wrapRealDistribution(final AbstractRealDistribution distribution, final Bound bound) {
     if (bound == null) {
       return distribution;
     }
     return new RealDistributionLimiter(distribution, bound.getLeftBound(), bound.getRightBound());
+  }
+
+  private static JsonElement getElement(final JsonObject object, final String name, final String error) {
+    if (!object.has(name)) {
+      throw new ParseException(error + " Element '" + name + "' doesn't exist.");
+    }
+
+    return object.get(name);
+  }
+
+  private static int getInt(final JsonObject object, final String name, final String error) {
+    final JsonElement element = getElement(object, name, error);
+
+    try {
+      return element.getAsInt();
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + " Element '" + name + "' is not an integer.", exception);
+    }
   }
 
   private static class Bound {
