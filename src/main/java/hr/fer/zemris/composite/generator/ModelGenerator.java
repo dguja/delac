@@ -5,8 +5,12 @@ import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.Model;
 import hr.fer.zemris.composite.generator.model.NodeType;
+import hr.fer.zemris.composite.generator.model.nodes.BranchNode;
 import hr.fer.zemris.composite.generator.model.nodes.InputNode;
+import hr.fer.zemris.composite.generator.model.nodes.LoopNode;
 import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
+import hr.fer.zemris.composite.generator.model.nodes.ParallelNode;
+import hr.fer.zemris.composite.generator.model.nodes.SequenceNode;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
@@ -284,18 +288,22 @@ public class ModelGenerator {
 
     final int id = nextId();
 
-    final AbstractNode node = null; // TODO makni null
+    AbstractNode node = null; // TODO makni null
     switch (nodeType) {
       case BRANCH:
+        node = new BranchNode(id, level, realDistributions.get("p3"));
         break;
-
+        
       case SEQUENCE:
+        node = new SequenceNode(id, level);
         break;
 
       case PARALLEL:
+        node = new ParallelNode(id, level, discreteDistributions.get("p4").sample());
         break;
 
       case LOOP:
+        node = new LoopNode(id, level);
         break;
 
       default:
