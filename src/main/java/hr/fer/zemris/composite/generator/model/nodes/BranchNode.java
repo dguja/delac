@@ -21,8 +21,8 @@ public class BranchNode extends AbstractNode {
 
   protected List<Double> probabilities;
   
-  public BranchNode(long id, List<Double> probabilities) {
-    super(id);
+  public BranchNode(long id, int level, List<Double> probabilities) {
+    super(id, level);
     this.probabilities = new ArrayList<>(probabilities);
   }
 
@@ -50,12 +50,6 @@ public class BranchNode extends AbstractNode {
       combReliability *= (1-falseProbability);
       reliability += combReliability;
     }
-  }
-
-  @Override
-  public void calculateReliability(boolean direction) {
-    // TODO Auto-generated method stub
-    
   }
 
   @Override

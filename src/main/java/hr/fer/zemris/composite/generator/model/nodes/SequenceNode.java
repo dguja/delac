@@ -16,8 +16,8 @@ public class SequenceNode extends AbstractNode {
    */
   private static final long serialVersionUID = -3575455154989781205L;
 
-  public SequenceNode(long id) {
-    super(id);
+  public SequenceNode(long id, int level) {
+    super(id, level);
   }
 
   @Override
@@ -27,13 +27,7 @@ public class SequenceNode extends AbstractNode {
       reliability *= node.getReliability();
     }
   }
-
-  @Override
-  public void calculateReliability(boolean direction) {
-    // TODO Auto-generated method stub
-
-  }
-
+  
   @Override
   public NodeType getType() {
     return NodeType.SEQUENCE;

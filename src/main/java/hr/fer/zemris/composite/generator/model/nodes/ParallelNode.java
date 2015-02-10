@@ -22,8 +22,8 @@ public class ParallelNode extends AbstractNode {
    */
   protected int k;
   
-  public ParallelNode(long id, int k) {
-    super(id);
+  public ParallelNode(long id, int level, int k) {
+    super(id, level);
     this.k = k;
   }
 
@@ -50,12 +50,6 @@ public class ParallelNode extends AbstractNode {
       
       reliability += combReliability;
     }
-  }
-
-  @Override
-  public void calculateReliability(boolean direction) {
-    // TODO Auto-generated method stub
-    
   }
 
   @Override

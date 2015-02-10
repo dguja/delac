@@ -18,8 +18,8 @@ public class LoopNode extends AbstractNode {
 
   protected int numRepetitions;
 
-  public LoopNode(long id) {
-    super(id);
+  public LoopNode(long id, int level) {
+    super(id, level);
   }
     
   public int getNumRepetitions() {
@@ -33,11 +33,6 @@ public class LoopNode extends AbstractNode {
   @Override
   protected void calculateDirectReliability() {
     reliability = Math.pow(parents.get(0).getReliability(), numRepetitions);
-  }
-
-  @Override
-  public void calculateReliability(boolean direction) {
-    // TODO Auto-generated method stub
   }
 
   @Override

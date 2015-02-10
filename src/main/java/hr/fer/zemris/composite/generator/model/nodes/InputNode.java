@@ -11,12 +11,12 @@ public class InputNode extends AbstractNode implements Cloneable {
   private static final long serialVersionUID = -8999082127044865007L;
 
   public InputNode(final long id, final double reliability) {
-    super(id);
+    super(id, 0);
     this.reliability = reliability;
   }
 
   private InputNode(final InputNode other) {
-    super(other.id);
+    super(other.id, other.level);
     this.reliability = other.reliability;
     this.weight = other.weight;
   }
@@ -37,12 +37,6 @@ public class InputNode extends AbstractNode implements Cloneable {
 
   @Override
   protected void calculateDirectReliability() {
-    // NOTHING TO DO
-  }
-
-  @Override
-  public void calculateReliability(boolean direction) {
-    // TODO Auto-generated method stub
   }
 
 }

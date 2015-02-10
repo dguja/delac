@@ -1,8 +1,13 @@
 package hr.fer.zemris.composite.generator.model;
 
+import hr.fer.zemris.composite.generator.model.nodes.DirectionType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Apstraktni čvor
@@ -19,6 +24,8 @@ public abstract class AbstractNode implements Serializable {
   private static final long serialVersionUID = 4195003577285391138L;
 
   protected long id;
+  
+  protected int level;
 
   protected double reliability;
 
@@ -28,13 +35,18 @@ public abstract class AbstractNode implements Serializable {
 
   protected List<AbstractNode> children = new ArrayList<>();
 
-  public AbstractNode(final long id) {
+  public AbstractNode(final long id, int level) {
     super();
     this.id = id;
+    this.level = level;
   }
   
   public long getId() {
     return id;
+  }
+
+  public int getLevel() {
+    return level;
   }
 
   public List<AbstractNode> getParents() {
@@ -55,6 +67,39 @@ public abstract class AbstractNode implements Serializable {
 
   public void setWeight(double weight) {
     this.weight = weight;
+  }
+  
+  public List<AbstractNode> getUpdateList(DirectionType direction) {
+    Set<AbstractNode> updateSet = new TreeSet<>(new Comparator<AbstractNode>() {
+
+      @Override
+      public int compare(AbstractNode node1, AbstractNode node2) {
+        return Integer.compare(node1.getLevel(), node2.getLevel());
+      }
+      
+    });
+    
+    List<AbstractNode> nodes;
+    if (direction == DirectionType.CHILD) {
+      nodes = children;
+    } else {
+      nodes = parents;
+    }
+    
+    for (AbstractNode node : nodes) {
+      updateSet.add(node);
+      updateSet.addAll(node.getUpdateList(direction));
+    }
+    
+    List<AbstractNode> updateList = new ArrayList<AbstractNode>(updateSet);
+    return updateList;
+  }
+  
+  public void calculateReliability(DirectionType direction) {
+    List<AbstractNode> updateList = getUpdateList(direction);
+    for (AbstractNode node : updateList) {
+      node.calculateDirectReliability();
+    }
   }
   
   @Override
@@ -85,8 +130,6 @@ public abstract class AbstractNode implements Serializable {
   }
   
   protected abstract void calculateDirectReliability();
-  
-  public abstract void calculateReliability(boolean direction);
 
   public abstract NodeType getType();
 
