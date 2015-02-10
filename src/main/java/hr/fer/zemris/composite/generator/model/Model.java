@@ -4,6 +4,8 @@ import hr.fer.zemris.composite.generator.model.nodes.InputNode;
 import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Model implements Serializable {
@@ -13,16 +15,19 @@ public class Model implements Serializable {
    */
   private static final long serialVersionUID = -9102857521500197424L;
 
-  private List<InputNode> inputs;
+  private final List<InputNode> inputs;
 
-  private OutputNode output;
+  private final OutputNode output;
+
+  public Model(final List<InputNode> inputs, final OutputNode output) {
+    super();
+
+    this.inputs = new ArrayList<>(inputs);
+    this.output = output;
+  }
 
   public List<InputNode> getInputs() {
-    return inputs;
-  }
-  
-  public void setInputs(List<InputNode> inputs) {
-    this.inputs = inputs;
+    return Collections.unmodifiableList(inputs);
   }
 
   public OutputNode getOutput() {

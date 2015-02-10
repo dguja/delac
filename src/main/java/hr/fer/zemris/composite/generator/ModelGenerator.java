@@ -55,7 +55,7 @@ public class ModelGenerator {
       inputs.add(new InputNode(nextId(), realDistributions.get("p1").sample()));
     }
 
-    final IntegerDistribution mDistribution = new IntegerDistributionLimiter(discreteDistributions.get("d2"), 0, n + 1);
+    final IntegerDistribution mDistribution = new IntegerDistributionLimiter(discreteDistributions.get("d2"), 0, n);
 
     final List<Model> models = new ArrayList<>();
     for (int i = 0; i < modelCount; i++) {
@@ -69,7 +69,7 @@ public class ModelGenerator {
     // 2
     final List<InputNode> originals = RandomUtilities.choose(datasetInputs, mDistribution.sample());
 
-    final List<AbstractNode> inputs = new ArrayList<>();
+    final List<InputNode> inputs = new ArrayList<>();
     for (int i = 0; i < originals.size(); i++) {
       inputs.add(copyInputs ? originals.get(i).clone() : originals.get(i));
     }
@@ -85,7 +85,7 @@ public class ModelGenerator {
     List<AbstractNode> nodes = null;
     for (int i = 0; i < k - 1; i++) {
       if (i == 0) {
-        nodes = inputs;
+        nodes = new ArrayList<AbstractNode>(inputs);
       } else {
         // 6
         final List<AbstractNode> previousLevelNodes = nodes;
@@ -104,19 +104,18 @@ public class ModelGenerator {
     }
 
     // 8
-    OutputNode output = new OutputNode(nextId());
+    final OutputNode output = new OutputNode(nextId());
     // sve s K - 2 razine povezi s izlaznim jednom vezom
     for (int i = nodes.size(); i >= 0; i--) {
       nodes.get(i).getChildren().add(output);
       output.getParents().add(nodes.get(i));
     }
-    for (AbstractNode parent : levelEdges.get(k - 1).keySet()) {
+    for (final AbstractNode parent : levelEdges.get(k - 1).keySet()) {
       parent.getChildren().add(output);
       output.getParents().add(parent);
     }
 
-    return null; // TODO
-
+    return new Model(inputs, output);
   }
 
   private List<AbstractNode> connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
@@ -130,8 +129,7 @@ public class ModelGenerator {
       lEqualP(nodes, levelEdges, currentLevel, l);
     } else if (l < p) {
 
-      final IntegerDistribution behaviorOfGenerator =
-          new IntegerDistributionLimiter(discreteDistributions.get("d12"), 0, 3);
+      final IntegerDistribution behaviorOfGenerator = discreteDistributions.get("d12");
       switch (behaviorOfGenerator.sample()) {
         case 1:
           nodes.addAll(createNodes(p - l));
@@ -140,8 +138,8 @@ public class ModelGenerator {
         case 2:
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
           for (final AbstractNode parent : parents.keySet()) {
-            int nodesToChoose = RandomProvider.getRandom().nextInt(parents.get(parent));
-            List<AbstractNode> choosed = RandomUtilities.choose(nodes, nodesToChoose);
+            final int nodesToChoose = RandomProvider.getRandom().nextInt(parents.get(parent));
+            final List<AbstractNode> choosed = RandomUtilities.choose(nodes, nodesToChoose);
             for (int i = 0; i < nodesToChoose; i++) {
               choosed.get(i).getParents().add(parent);
               parent.getChildren().add(choosed.get(i));
@@ -149,14 +147,14 @@ public class ModelGenerator {
           }
           break;
         case 3:
-          List<AbstractNode> candidates = new ArrayList<>();
-          for (AbstractNode parent : levelEdges.get(currentLevel).keySet()) {
+          final List<AbstractNode> candidates = new ArrayList<>();
+          for (final AbstractNode parent : levelEdges.get(currentLevel).keySet()) {
             for (int i = levelEdges.get(currentLevel).get(parent); i >= 0; i--) {
               candidates.add(parent);
             }
           }
-          Set<AbstractNode> connected = new HashSet<>();
-          List<AbstractNode> choosed = RandomUtilities.choose(candidates, l);
+          final Set<AbstractNode> connected = new HashSet<>();
+          final List<AbstractNode> choosed = RandomUtilities.choose(candidates, l);
           for (int i = 0; i < l; i++) {
             nodes.get(i).getParents().add(choosed.get(i));
             choosed.get(i).getChildren().add(nodes.get(i));
@@ -187,7 +185,7 @@ public class ModelGenerator {
           final Set<AbstractNode> leftNodes = new HashSet<>();
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
           for (final AbstractNode parent : parents.keySet()) {
-            List<AbstractNode> choosed = RandomUtilities.choose(nodes, parents.get(parent));
+            final List<AbstractNode> choosed = RandomUtilities.choose(nodes, parents.get(parent));
             for (int i = parents.get(parent); i >= 0; i--) {
               leftNodes.add(choosed.get(i));
               choosed.get(i).getParents().add(parent);
@@ -241,22 +239,23 @@ public class ModelGenerator {
       final List<Map<AbstractNode, Integer>> levelEdges) {
 
     final IntegerDistribution targetLevelDistribution =
-        new IntegerDistributionLimiter(discreteDistributions.get("d9"), 0, depthK - currentLevel + 1);
+        new IntegerDistributionLimiter(discreteDistributions.get("d9"), 1, depthK - currentLevel);
 
     for (final AbstractNode node : nodes) {
       // 4
       final int edgeCount = discreteDistributions.get(node.getType().getDistributionName()).sample();
       // 5
       for (int j = 0; j < edgeCount; j++) {
-        final int targetLevel = targetLevelDistribution.sample();
+        final int targetLevel = currentLevel + targetLevelDistribution.sample();
         putEdgeInLevelEdges(levelEdges, targetLevel, node);
       }
     }
-    // obavezno stvoriti jednu vezu prema razini trenutnaRazina + 1
-    if (levelEdges.get(currentLevel + 1).isEmpty()) {
-      final AbstractNode node = nodes.get(RandomProvider.getRandom().nextInt(nodes.size()));
-      levelEdges.get(currentLevel + 1).put(node, 1);
-    }
+    /*
+     * // TODO jel treba ovo ostavit: obavezno stvoriti jednu vezu prema razini trenutnaRazina + 1
+     * if (levelEdges.get(currentLevel + 1).isEmpty()) { final AbstractNode node =
+     * nodes.get(RandomProvider.getRandom().nextInt(nodes.size())); levelEdges.get(currentLevel +
+     * 1).put(node, 1); }
+     */
   }
 
   /**
@@ -268,25 +267,24 @@ public class ModelGenerator {
    */
   private void putEdgeInLevelEdges(final List<Map<AbstractNode, Integer>> levelEdges, final int targetLevel,
       final AbstractNode node) {
-    if (levelEdges.get(targetLevel).containsKey(node)) {
-      levelEdges.get(targetLevel).put(node, levelEdges.get(targetLevel).get(node) + 1);
-    } else {
-      levelEdges.get(targetLevel).put(node, 1);
+    final Map<AbstractNode, Integer> targetEdges = levelEdges.get(targetLevel);
+
+    int previousValue = 0;
+    if (targetEdges.containsKey(node)) {
+      previousValue = targetEdges.get(node);
     }
+
+    targetEdges.put(node, previousValue + 1);
   }
 
   private List<AbstractNode> createNodes(final int numberOfNodes) {
-
     final List<AbstractNode> nodes = new ArrayList<>(numberOfNodes);
 
-    // sluzi za odabir tipa cvora, pogledati enum NodeType zasto su granice [1, 5>
-    final IntegerDistribution nodeTypeDistribution =
-        new IntegerDistributionLimiter(discreteDistributions.get("d10"), 1, 5);
+    final IntegerDistribution nodeTypeDistribution = discreteDistributions.get("d10");
 
     for (int i = 0; i < numberOfNodes; i++) {
       final AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance(nextId());
-      node.setReliability(realDistributions.get("p2").sample());
-      node.setWeight(realDistributions.get("p3").sample());
+      node.setWeight(realDistributions.get("p2").sample());
       nodes.add(node);
     }
     return nodes;

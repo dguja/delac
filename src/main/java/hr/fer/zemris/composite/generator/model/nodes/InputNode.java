@@ -19,6 +19,11 @@ public class InputNode extends AbstractNode implements Cloneable {
   }
 
   @Override
+  public void setReliability(final double reliability) {
+    super.setReliability(reliability);
+  }
+
+  @Override
   public InputNode clone() {
     return new InputNode(this);
   }

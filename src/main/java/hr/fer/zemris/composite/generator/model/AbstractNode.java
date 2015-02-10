@@ -48,7 +48,7 @@ public abstract class AbstractNode implements Serializable {
     this.reliability = other.reliability;
     this.weight = other.weight;
   }
-  
+
   public long getId() {
     return id;
   }
@@ -65,7 +65,7 @@ public abstract class AbstractNode implements Serializable {
     return reliability;
   }
 
-  public void setReliability(final double reliability) {
+  protected void setReliability(final double reliability) {
     this.reliability = reliability;
   }
 
@@ -73,10 +73,10 @@ public abstract class AbstractNode implements Serializable {
     return weight;
   }
 
-  public void setWeight(double weight) {
+  public void setWeight(final double weight) {
     this.weight = weight;
   }
-  
+
   @Override
   public int hashCode() {
     return 31 + (int) (id ^ (id >>> 32));
