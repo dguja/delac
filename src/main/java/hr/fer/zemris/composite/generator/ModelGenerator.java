@@ -104,7 +104,7 @@ public class ModelGenerator {
     }
 
     // 8
-    final OutputNode output = new OutputNode(nextId());
+    final OutputNode output = new OutputNode(nextId(), k - 1);
     // sve s K - 2 razine povezi s izlaznim jednom vezom
     for (final AbstractNode parent : nodes) {
       output.addParent(parent);
@@ -272,8 +272,6 @@ public class ModelGenerator {
 
   private List<AbstractNode> createNodes(final int numberOfNodes, final int level) {
     final List<AbstractNode> nodes = new ArrayList<>(numberOfNodes);
-
-    final IntegerDistribution nodeTypeDistribution = discreteDistributions.get("d10");
 
     for (int i = 0; i < numberOfNodes; i++) {
       nodes.add(newInstance(level));

@@ -11,21 +11,23 @@ public class InputNode extends AbstractNode implements Cloneable {
   private static final long serialVersionUID = -8999082127044865007L;
 
   public InputNode(final long id, final double reliability) {
-    super(id, reliability);
+    super(id, 0);
+    this.reliability = reliability;
   }
 
   private InputNode(final InputNode other) {
-    super(other);
-  }
-  
-  @Override
-  public boolean addParent(AbstractNode parent) {
-    throw new UnsupportedOperationException("InputNode can't have parents.");
+    super(other.id, other.level);
+    this.reliability = other.reliability;
+    this.weight = other.weight;
   }
 
   @Override
+  public boolean addParent(final AbstractNode parent) {
+    throw new UnsupportedOperationException("InputNode can't have parents.");
+  }
+
   public void setReliability(final double reliability) {
-    super.setReliability(reliability);
+    this.reliability = reliability;
   }
 
   @Override
@@ -37,5 +39,8 @@ public class InputNode extends AbstractNode implements Cloneable {
   public NodeType getType() {
     return NodeType.INPUT;
   }
+
+  @Override
+  protected void calculateDirectReliability() {}
 
 }
