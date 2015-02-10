@@ -29,8 +29,26 @@ public class ParallelNode extends AbstractNode {
 
   @Override
   protected void calculateDirectReliability() {
-    for (int mask = 0; mask < (1<<parents.size()); ++mask) {
+    int numParents = parents.size();
+    int numCombinations = 1<<numParents;
+    
+    for (int mask = 0; mask < numCombinations; ++mask) {
+      if (Integer.bitCount(mask) < k) {
+        continue;
+      }
       
+      double combReliability = 1.0;
+      for (int i = 0; i < numParents; ++i) {
+        double parentReliability = parents.get(i).getReliability();
+        
+        if ((mask&(1<<i)) == 0) {
+          combReliability *= (1-parentReliability);
+        } else {
+          combReliability *= parentReliability;
+        }
+      }
+      
+      reliability += combReliability;
     }
   }
 
@@ -44,5 +62,5 @@ public class ParallelNode extends AbstractNode {
   public NodeType getType() {
     return NodeType.PARALLEL;
   }
-
+  
 }
