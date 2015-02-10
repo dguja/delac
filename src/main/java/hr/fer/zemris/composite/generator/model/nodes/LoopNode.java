@@ -32,11 +32,11 @@ public class LoopNode extends AbstractNode {
 
   @Override
   public boolean addParent(final AbstractNode parent) {
-    if (children.size() >= 1) {
-      return false;
+    if (parents.isEmpty()) {
+      return super.addParent(parent);
     }
 
-    return super.addParent(parent);
+    return false;
   }
 
   @Override
