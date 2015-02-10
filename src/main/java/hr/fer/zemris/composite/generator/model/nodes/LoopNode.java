@@ -7,7 +7,7 @@ import hr.fer.zemris.composite.generator.model.NodeType;
  * Loop node.
  * 
  * @author mmilisic
- *
+ * 
  */
 public class LoopNode extends AbstractNode {
 
@@ -18,16 +18,25 @@ public class LoopNode extends AbstractNode {
 
   protected int numRepetitions;
 
-  public LoopNode(long id, int level) {
+  public LoopNode(final long id, final int level) {
     super(id, level);
   }
-    
+
   public int getNumRepetitions() {
     return numRepetitions;
   }
-  
-  public void setNumRepetitions(int numRepetitions) {
+
+  public void setNumRepetitions(final int numRepetitions) {
     this.numRepetitions = numRepetitions;
+  }
+
+  @Override
+  public boolean addParent(final AbstractNode parent) {
+    if (children.size() >= 1) {
+      return false;
+    }
+
+    return super.addParent(parent);
   }
 
   @Override
