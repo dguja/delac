@@ -30,23 +30,7 @@ public abstract class AbstractNode implements Serializable {
 
   public AbstractNode(final long id) {
     super();
-
     this.id = id;
-  }
-
-  public AbstractNode(final long id, final double reliability) {
-    super();
-
-    this.id = id;
-    this.reliability = reliability;
-  }
-
-  protected AbstractNode(final AbstractNode other) {
-    super();
-
-    this.id = other.id;
-    this.reliability = other.reliability;
-    this.weight = other.weight;
   }
   
   public long getId() {
@@ -103,6 +87,10 @@ public abstract class AbstractNode implements Serializable {
 
     return true;
   }
+  
+  protected abstract void calculateDirectReliability();
+  
+  public abstract void calculateReliability(boolean direction);
 
   public abstract NodeType getType();
 
