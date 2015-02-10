@@ -2,6 +2,7 @@ package hr.fer.zemris.composite.generator.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,11 +55,11 @@ public abstract class AbstractNode implements Serializable {
   }
 
   public List<AbstractNode> getParents() {
-    return parents;
+    return Collections.unmodifiableList(parents);
   }
 
   public List<AbstractNode> getChildren() {
-    return children;
+    return Collections.unmodifiableList(children);
   }
 
   public double getReliability() {
@@ -102,6 +103,23 @@ public abstract class AbstractNode implements Serializable {
     }
 
     return true;
+  }
+  
+  protected boolean isFull() {
+    return false;
+  }
+  
+  public boolean addParent(AbstractNode parent) {
+    if(isFull()) {
+      return false;
+    } 
+    parents.add(parent);
+    parent.addChild(this);
+    return true;
+  }
+
+  protected void addChild(AbstractNode child) {
+    children.add(child);
   }
 
   public abstract NodeType getType();

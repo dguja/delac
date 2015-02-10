@@ -13,6 +13,11 @@ public class OutputNode extends AbstractNode {
   public OutputNode(final long id) {
     super(id);
   }
+  
+  @Override
+  protected void addChild(AbstractNode child) {
+    throw new UnsupportedOperationException("OutputNode can't have children.");
+  }
 
   @Override
   public NodeType getType() {
