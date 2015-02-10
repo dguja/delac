@@ -54,41 +54,202 @@ import com.google.gson.JsonParser;
  */
 public class ConfigParser {
 
-  private static final String ERROR_ROOT_PARAMETER = "Error while parsing root parameter.";
+  private static final String ERROR_ROOT_PARAMETER = "Error while parsing root parameter. ";
+
+  private static final String ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER =
+      "Error while parsing a discrete distribution at position ";
+
+  private static final String ERROR_DISCRETE_DISTRIBUTIONS_NAME =
+      "Error while parsing a discrete distribution with name ";
+
+  private static final String ERROR_REAL_DISTRIBUTIONS_PARAMETER =
+      "Error while parsing a real distribution at position ";
+
+  private static final String ERROR_REAL_DISTRIBUTIONS_NAME =
+      "Error while parsing a real distribution with name ";
+
+  private int modelCount;
+
+  private boolean copyInputs;
+
+  private Map<String, IntegerDistribution> discreteDistributions = new HashMap<>();
+
+  private Map<String, RealDistribution> realDistributions = new HashMap<>();
 
   /**
-   * Vraća {@link ModelGenerator} popunjenog s podacima iz <code>json</code>a.
+   * Fills <code>modelCount</code>, <code>copyInputs</code>, <code>discreteDistributions</code> and
+   * <code>realDistributions</code> from <code>inputStream</code> containing a Json file.
    * 
-   * 
-   * @param json JSON konfiguracijska datoteka generatora.
-   * @return {@link ModelGenerator}
+   * @param inputStream {@link InputStream} with a Json file
    */
-  public static ModelGenerator parse(final InputStream inputStream) {
-    final Map<String, IntegerDistribution> discreteDistributionsMap = new HashMap<>();
-
-    final Map<String, RealDistribution> realDistributionsMap = new HashMap<>();
-
+  public void parse(final InputStream inputStream) {
     final JsonParser parser = new JsonParser();
 
-    final JsonObject root = parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).getAsJsonObject();
+    final JsonObject root =
+        parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).getAsJsonObject();
 
-    final int modelCount = getInt(root, "modelCount", ERROR_ROOT_PARAMETER);
+    modelCount = getInt(root, "modelCount", ERROR_ROOT_PARAMETER);
 
-    final boolean copyInputs = root.get("copyInputs").getAsBoolean();
+    copyInputs = getBoolean(root, "copyInputs", ERROR_ROOT_PARAMETER);
 
-    final JsonArray discreteDistributions = root.get("discreteDistributions").getAsJsonArray();
-    for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
-      final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
-      putDiscreteDistribution(discreteDistributionsMap, current);
+    if (root.has("discreteDistributions")) {
+      final JsonArray discreteDistributions =
+          getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
+      for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
+        final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
+        putDiscreteDistribution(current, ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER + i + ". ");
+      }
     }
 
-    final JsonArray realDistributions = root.get("realDistributions").getAsJsonArray();
-    for (int i = 0, size = realDistributions.size(); i < size; i++) {
-      final JsonObject current = realDistributions.get(i).getAsJsonObject();
-      putRealDistribution(realDistributionsMap, current);
+    if (root.has("realDistributions")) {
+      final JsonArray realDistributions =
+          getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
+      for (int i = 0, size = realDistributions.size(); i < size; i++) {
+        final JsonObject current = realDistributions.get(i).getAsJsonObject();
+        putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
+      }
+    }
+    if (root.has("discreteDistributions")) {
+      final JsonArray discreteDistributions =
+          getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
+      for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
+        final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
+        putDiscreteDistribution(current, ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER + i + ". ");
+      }
     }
 
-    return new ModelGenerator(modelCount, copyInputs, discreteDistributionsMap, realDistributionsMap);
+    if (root.has("realDistributions")) {
+      final JsonArray realDistributions =
+          getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
+      for (int i = 0, size = realDistributions.size(); i < size; i++) {
+        final JsonObject current = realDistributions.get(i).getAsJsonObject();
+        putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
+      }
+    }
+  }
+
+  private void putDiscreteDistribution(final JsonObject current, final String error) {
+    final String name = getString(current, "name", error);
+    final JsonObject distribution = getJsonObject(current, "distribution", error);
+    final String type = getString(current, "type", error);
+
+    DiscreteBound bound = null;
+    if (distribution.has("range")) {
+      bound =
+          getDiscreteBound(distribution, "range", ERROR_DISCRETE_DISTRIBUTIONS_NAME + name + ". ");
+    }
+
+    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
+    IntegerDistribution dist = null;
+    switch (type) {
+      case "binomial": {
+        final int n = parameters.get("n").getAsInt();
+        final double p = parameters.get("p").getAsDouble();
+
+        dist =
+            wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p),
+                bound);
+        break;
+      }
+      case "enumerated": {
+
+        final int[] v = getIntArray(parameters.get("v").getAsJsonArray());
+
+        final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
+
+        dist =
+            wrapDiscreteDistribution(
+                new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
+        break;
+      }
+      case "geometric": {
+
+        final double p = parameters.get("p").getAsDouble();
+        dist =
+            wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p),
+                bound);
+        break;
+      }
+      case "poisson": {
+
+        final double lambda = parameters.get("lambda").getAsDouble();
+        dist =
+            wrapDiscreteDistribution(new PoissonDistribution(RandomProvider.getGenerator(), lambda,
+                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS),
+                bound);
+        break;
+      }
+      case "uniform": {
+
+        final int lower = parameters.get("lower").getAsInt();
+        final int upper = parameters.get("upper").getAsInt();
+        dist =
+            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(),
+                lower, upper), bound);
+        break;
+      }
+      default: {
+        throw new ParseException("Distribution type not supported: " + type);
+      }
+    }
+    discreteDistributions.put(name, dist);
+  }
+
+  private void putRealDistribution(final JsonObject current, String error) {
+    final String name = getString(current, "name", error);
+    final JsonObject distribution = getJsonObject(current, "distribution", error);
+    final String type = getString(current, "type", error);
+
+    RealBound bound = null;
+    if (distribution.has("range")) {
+      bound = getRealBound(distribution, "range", ERROR_REAL_DISTRIBUTIONS_NAME + name + ". ");
+    }
+
+    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
+    RealDistribution dist = null;
+    switch (type) {
+      case "normal": {
+        final int a = parameters.get("a").getAsInt();
+        final double d = parameters.get("d").getAsDouble();
+
+        dist =
+            wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
+        break;
+      }
+      case "exponential": {
+        final double lambda = parameters.get("lambda").getAsDouble();
+
+        dist =
+            wrapRealDistribution(
+                new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
+
+        break;
+      }
+      case "enumerated": {
+
+        final double[] v = getDoubleArray(parameters.get("v").getAsJsonArray());
+
+        final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
+
+        dist =
+            wrapRealDistribution(
+                new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
+        break;
+      }
+      case "uniform": {
+
+        final double lower = parameters.get("lower").getAsDouble();
+        final double upper = parameters.get("upper").getAsDouble();
+        dist =
+            wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower,
+                upper), bound);
+        break;
+      }
+      default: {
+        throw new ParseException("Distribution type not supported: " + type);
+      }
+    }
+    realDistributions.put(name, dist);
   }
 
   private static int[] getIntArray(final JsonArray jsonArray) {
@@ -107,135 +268,24 @@ public class ConfigParser {
     return array;
   }
 
-  private static void putDiscreteDistribution(final Map<String, IntegerDistribution> discreteDistributionsMap,
-      final JsonObject current) {
-    final String name = current.get("name").getAsString();
-    final JsonObject distribution = current.get("distribution").getAsJsonObject();
-    final String type = distribution.get("type").getAsString();
-
-    Bound bound = null;
-    if (distribution.has("range")) {
-      final JsonArray range = distribution.get("range").getAsJsonArray();
-      bound = new Bound(range.get(0).getAsInt(), range.get(1).getAsInt());
-    }
-
-    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
-    IntegerDistribution dist = null;
-    switch (type) {
-      case "binomial": {
-        final int n = parameters.get("n").getAsInt();
-        final double p = parameters.get("p").getAsDouble();
-
-        dist = wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p), bound);
-        break;
-      }
-      case "enumerated": {
-
-        final int[] v = getIntArray(parameters.get("v").getAsJsonArray());
-
-        final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
-
-        dist = wrapDiscreteDistribution(new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
-        break;
-      }
-      case "geometric": {
-
-        final double p = parameters.get("p").getAsDouble();
-        dist = wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p), bound);
-        break;
-      }
-      case "poisson": {
-
-        final double lambda = parameters.get("lambda").getAsDouble();
-        dist =
-            wrapDiscreteDistribution(new PoissonDistribution(RandomProvider.getGenerator(), lambda,
-                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS), bound);
-        break;
-      }
-      case "uniform": {
-
-        final int lower = parameters.get("lower").getAsInt();
-        final int upper = parameters.get("upper").getAsInt();
-        dist =
-            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(), lower, upper), bound);
-        break;
-      }
-      default: {
-        throw new ParseException("Distribution type not supported: " + type);
-      }
-    }
-    discreteDistributionsMap.put(name, dist);
-  }
-
-  private static void putRealDistribution(final Map<String, RealDistribution> realDistributionsMap,
-      final JsonObject current) {
-    final String name = current.get("name").getAsString();
-
-    final JsonObject distribution = current.get("distribution").getAsJsonObject();
-    final String type = distribution.get("type").getAsString();
-
-    Bound bound = null;
-    if (distribution.has("range")) {
-      final JsonArray range = distribution.get("range").getAsJsonArray();
-      bound = new Bound(range.get(0).getAsInt(), range.get(1).getAsInt());
-    }
-
-    final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
-    RealDistribution dist = null;
-    switch (type) {
-      case "normal": {
-        final int a = parameters.get("a").getAsInt();
-        final double d = parameters.get("d").getAsDouble();
-
-        dist = wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
-        break;
-      }
-      case "exponential": {
-        final double lambda = parameters.get("lambda").getAsDouble();
-
-        dist = wrapRealDistribution(new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
-
-        break;
-      }
-      case "enumerated": {
-
-        final double[] v = getDoubleArray(parameters.get("v").getAsJsonArray());
-
-        final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
-
-        dist = wrapRealDistribution(new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
-        break;
-      }
-      case "uniform": {
-
-        final double lower = parameters.get("lower").getAsDouble();
-        final double upper = parameters.get("upper").getAsDouble();
-        dist = wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower, upper), bound);
-        break;
-      }
-      default: {
-        throw new ParseException("Distribution type not supported: " + type);
-      }
-    }
-    realDistributionsMap.put(name, dist);
-  }
-
-  private static IntegerDistribution wrapDiscreteDistribution(final AbstractIntegerDistribution distribution,
-      final Bound bound) {
+  private static IntegerDistribution wrapDiscreteDistribution(
+      final AbstractIntegerDistribution distribution, final DiscreteBound bound) {
     if (bound == null) {
       return distribution;
     }
     return new IntegerDistributionLimiter(distribution, bound.getLeftBound(), bound.getRightBound());
   }
 
-  private static RealDistribution wrapRealDistribution(final AbstractRealDistribution distribution, final Bound bound) {
+  private static RealDistribution wrapRealDistribution(final AbstractRealDistribution distribution,
+      final RealBound bound) {
     if (bound == null) {
       return distribution;
     }
     return new RealDistributionLimiter(distribution, bound.getLeftBound(), bound.getRightBound());
   }
 
-  private static JsonElement getElement(final JsonObject object, final String name, final String error) {
+  private static JsonElement getElement(final JsonObject object, final String name,
+      final String error) {
     if (!object.has(name)) {
       throw new ParseException(error + " Element '" + name + "' doesn't exist.");
     }
@@ -253,13 +303,106 @@ public class ConfigParser {
     }
   }
 
-  private static class Bound {
+  private static boolean getBoolean(final JsonObject object, final String name, final String error) {
+    final JsonElement element = getElement(object, name, error);
+
+    try {
+      return element.getAsBoolean();
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + " Element '" + name + "' is not a boolean.", exception);
+    }
+  }
+
+  private static String getString(final JsonObject object, final String name, final String error) {
+    final JsonElement element = getElement(object, name, error);
+
+    try {
+      return element.getAsString();
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + " Element '" + name + "' is not a string.", exception);
+    }
+  }
+
+  private static JsonObject getJsonObject(final JsonObject object, final String name,
+      final String error) {
+    final JsonElement element = getElement(object, name, error);
+
+    try {
+      return element.getAsJsonObject();
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + " Element '" + name + "' is not a valid Json object.",
+          exception);
+    }
+  }
+
+  private static JsonArray getJsonArray(final JsonObject object, final String name,
+      final String error) {
+    final JsonElement element = getElement(object, name, error);
+
+    try {
+      return element.getAsJsonArray();
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + " Element '" + name + "' is not a valid Json array.",
+          exception);
+    }
+  }
+
+  private static DiscreteBound getDiscreteBound(final JsonObject object, final String name,
+      String error) {
+    final JsonArray array = getJsonArray(object, name, error);
+    if (array.size() != 2) {
+      throw new ParseException(error + "Expected two integers, got " + array.size() + ". ");
+    }
+
+    DiscreteBound bound = null;
+    try {
+      bound = new DiscreteBound(array.get(0).getAsInt(), array.get(1).getAsInt());
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + "Didn't get two valid integers.");
+    }
+
+    return bound;
+  }
+
+  private static RealBound getRealBound(final JsonObject object, final String name, String error) {
+    final JsonArray array = getJsonArray(object, name, error);
+    if (array.size() != 2) {
+      throw new ParseException(error + "Expected two doubles, got " + array.size() + ". ");
+    }
+
+    RealBound bound = null;
+    try {
+      bound = new RealBound(array.get(0).getAsDouble(), array.get(1).getAsDouble());
+    } catch (ClassCastException | IllegalStateException exception) {
+      throw new ParseException(error + "Didn't get two valid doubles.");
+    }
+
+    return bound;
+  }
+
+  public int getModelCount() {
+    return modelCount;
+  }
+
+  public boolean getCopyInputs() {
+    return copyInputs;
+  }
+
+  public Map<String, IntegerDistribution> getDiscreteDistributions() {
+    return discreteDistributions;
+  }
+
+  public Map<String, RealDistribution> getRealDistributions() {
+    return realDistributions;
+  }
+
+  private static class DiscreteBound {
 
     private final int leftBound;
 
     private final int rightBound;
 
-    public Bound(final int leftBound, final int rightBound) {
+    public DiscreteBound(int leftBound, int rightBound) {
       super();
       this.leftBound = leftBound;
       this.rightBound = rightBound;
@@ -270,6 +413,27 @@ public class ConfigParser {
     }
 
     public int getRightBound() {
+      return rightBound;
+    }
+  }
+
+  private static class RealBound {
+
+    private final double leftBound;
+
+    private final double rightBound;
+
+    public RealBound(double leftBound, double rightBound) {
+      super();
+      this.leftBound = leftBound;
+      this.rightBound = rightBound;
+    }
+
+    public double getLeftBound() {
+      return leftBound;
+    }
+
+    public double getRightBound() {
       return rightBound;
     }
 
