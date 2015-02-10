@@ -98,7 +98,7 @@ public class ModelGenerator {
        * ako je na k - 2 razini, to je razina neposredno ispod izlaznog cvora, a oni svi moraju biti
        * jednom vezom povezani s izlaznim cvorom pa nije potrebno generirati veze
        */
-      if (i != k - 2) {
+      if (i < k - 2) {
         createEdges(nodes, i, k, levelEdges);
       }
     }
@@ -106,13 +106,11 @@ public class ModelGenerator {
     // 8
     final OutputNode output = new OutputNode(nextId());
     // sve s K - 2 razine povezi s izlaznim jednom vezom
-    for (int i = nodes.size(); i >= 0; i--) {
-      nodes.get(i).getChildren().add(output);
-      output.getParents().add(nodes.get(i));
+    for(AbstractNode parent : nodes) {
+      output.addParent(parent);
     }
-    for (final AbstractNode parent : levelEdges.get(k - 1).keySet()) {
-      parent.getChildren().add(output);
-      output.getParents().add(parent);
+    for(AbstractNode parent : levelEdges.get(k - 1).keySet()) {
+      output.addParent(parent);
     }
 
     return new Model(inputs, output);
@@ -249,6 +247,7 @@ public class ModelGenerator {
         final int targetLevel = currentLevel + targetLevelDistribution.sample();
         putEdgeInLevelEdges(levelEdges, targetLevel, node);
       }
+      putEdgeInLevelEdges(levelEdges, currentLevel + 1, node);
     }
     /*
      * // TODO jel treba ovo ostavit: obavezno stvoriti jednu vezu prema razini trenutnaRazina + 1
@@ -288,6 +287,10 @@ public class ModelGenerator {
       nodes.add(node);
     }
     return nodes;
+  }
+  
+  private AbstractNode newInstance() {
+    return null;
   }
 
   private int nextId() {
