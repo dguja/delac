@@ -89,7 +89,7 @@ public class ModelGenerator {
       } else {
         // 6
         final List<AbstractNode> previousLevelNodes = nodes;
-        nodes = createNodes(discreteDistributions.get("d11").sample());
+        nodes = createNodes(discreteDistributions.get("d11").sample(), i);
         // 7
         nodes = connectNodes(nodes, i, k, levelEdges, previousLevelNodes);
       }
@@ -106,10 +106,10 @@ public class ModelGenerator {
     // 8
     final OutputNode output = new OutputNode(nextId());
     // sve s K - 2 razine povezi s izlaznim jednom vezom
-    for(AbstractNode parent : nodes) {
+    for (final AbstractNode parent : nodes) {
       output.addParent(parent);
     }
-    for(AbstractNode parent : levelEdges.get(k - 1).keySet()) {
+    for (final AbstractNode parent : levelEdges.get(k - 1).keySet()) {
       output.addParent(parent);
     }
 
@@ -130,7 +130,7 @@ public class ModelGenerator {
       final IntegerDistribution behaviorOfGenerator = discreteDistributions.get("d12");
       switch (behaviorOfGenerator.sample()) {
         case 1:
-          nodes.addAll(createNodes(p - l));
+          nodes.addAll(createNodes(p - l, currentLevel));
           lEqualP(nodes, levelEdges, currentLevel, p);
           break;
         case 2:
@@ -249,12 +249,6 @@ public class ModelGenerator {
       }
       putEdgeInLevelEdges(levelEdges, currentLevel + 1, node);
     }
-    /*
-     * // TODO jel treba ovo ostavit: obavezno stvoriti jednu vezu prema razini trenutnaRazina + 1
-     * if (levelEdges.get(currentLevel + 1).isEmpty()) { final AbstractNode node =
-     * nodes.get(RandomProvider.getRandom().nextInt(nodes.size())); levelEdges.get(currentLevel +
-     * 1).put(node, 1); }
-     */
   }
 
   /**
@@ -276,21 +270,44 @@ public class ModelGenerator {
     targetEdges.put(node, previousValue + 1);
   }
 
-  private List<AbstractNode> createNodes(final int numberOfNodes) {
+  private List<AbstractNode> createNodes(final int numberOfNodes, final int level) {
     final List<AbstractNode> nodes = new ArrayList<>(numberOfNodes);
 
     final IntegerDistribution nodeTypeDistribution = discreteDistributions.get("d10");
 
     for (int i = 0; i < numberOfNodes; i++) {
-      final AbstractNode node = NodeType.get(nodeTypeDistribution.sample()).newInstance(nextId());
-      node.setWeight(realDistributions.get("p2").sample());
-      nodes.add(node);
+      nodes.add(newInstance(level));
     }
     return nodes;
   }
-  
-  private AbstractNode newInstance() {
-    return null;
+
+  private AbstractNode newInstance(final int level) {
+    final NodeType nodeType = NodeType.get(discreteDistributions.get("d10").sample());
+
+    final int id = nextId();
+
+    final AbstractNode node = null; // TODO makni null
+    switch (nodeType) {
+      case BRANCH:
+        break;
+
+      case SEQUENCE:
+        break;
+
+      case PARALLEL:
+        break;
+
+      case LOOP:
+        break;
+
+      default:
+        // TODO exception
+        break;
+    }
+
+    node.setWeight(realDistributions.get("p2").sample());
+
+    return node;
   }
 
   private int nextId() {
