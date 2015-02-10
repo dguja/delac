@@ -1,7 +1,5 @@
 package hr.fer.zemris.composite.generator.model.nodes;
 
-import java.awt.event.MouseAdapter;
-
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.NodeType;
 
@@ -21,6 +19,10 @@ public class InputNode extends AbstractNode implements Cloneable {
     super(other.id);
     this.reliability = other.reliability;
     this.weight = other.weight;
+  }
+  
+  public void setReliability(final double reliability) {
+    this.reliability = reliability;
   }
   
   @Override

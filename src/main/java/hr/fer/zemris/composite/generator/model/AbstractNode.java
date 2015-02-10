@@ -49,10 +49,6 @@ public abstract class AbstractNode implements Serializable {
     return reliability;
   }
 
-  public void setReliability(final double reliability) {
-    this.reliability = reliability;
-  }
-
   public double getWeight() {
     return weight;
   }
