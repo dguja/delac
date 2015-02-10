@@ -23,7 +23,7 @@ public class BranchNode extends AbstractNode {
 
   @Override
   protected void calculateDirectReliability() {
-    // TODO Auto-generated method stub
+    // TODO napisi kod
     
   }
 
