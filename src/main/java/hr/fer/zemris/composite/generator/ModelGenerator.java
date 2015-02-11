@@ -17,6 +17,7 @@ import hr.fer.zemris.composite.generator.random.RandomUtilities;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -144,45 +145,33 @@ public class ModelGenerator {
             for(int i = 0; i < choosedEdges; i++) {
               choosedChildren.get(i).addParent(parent);
             }
-            if(parent.getChildren().isEmpty() && !hasHigherEdges(parent, currentLevel)) {
+            if(parent.getChildren().isEmpty() && !hasHigherEdges(parent, currentLevel, levelEdges)) {
               removeNodeFromModel(parent);
             }
           }
-          
-          
-          // TODO dovrsit
-          
-          
-          
-          //          Map<AbstractNode, Integer> parentsMap = levelEdges.get(currentLevel);
-//          for(AbstractNode child : nodes) {
-//            List<AbstractNode> parents = new ArrayList<AbstractNode>(parentsMap.keySet());
-//            int maxNumberOfEdges = Math.min(parents.size(), p);
-//            int choosed = RandomProvider.getRandom().nextInt(maxNumberOfEdges);
-//            List<AbstractNode> choosedParents = RandomUtilities.choose(parents, choosed);
-//            for(int i = 0; i < choosed; i++) {
-//              AbstractNode parent = choosedParents.get(i);
-//              if(!child.addParent(parent)) {
-//                break;
-//              } else {
-//                int leftEdges = parentsMap.get(parent);
-//                if(leftEdges == 1) {
-//                  parentsMap.remove(parent);
-//                } else {
-//                  parentsMap.put(parent, leftEdges - 1);
-//                }
-//                p--;
-//              }
-//            }
-//          }
-          
-          
           return new ArrayList<>(connectedChildren);
         case 3:
-          
-          // TODO
-
-          
+          parentsMap = levelEdges.get(currentLevel);
+          List<AbstractNode> parents = new ArrayList<>();
+          for(AbstractNode parent : parentsMap.keySet()) {
+            for(int i = parentsMap.get(parent); i >= 0; i--) {
+              parents.add(parent);
+            }
+          }
+          List<AbstractNode> choosedParents = RandomUtilities.choose(parents, l);
+          Set<AbstractNode> parentsWithChildren = new HashSet<>(choosedParents);
+          for(int i = 0; i < l; i++) {
+            nodes.get(i).addParent(choosedParents.get(i));
+          }
+          for(AbstractNode parent : parentsMap.keySet()) {
+            if(parentsWithChildren.contains(parent)) {
+              continue;
+            }
+            if(hasHigherEdges(parent, currentLevel, levelEdges)) {
+              continue;
+            }
+            removeNodeFromModel(parent);
+          }
       }
     } else {
       final IntegerDistribution behaviorOfGenerator =
@@ -219,8 +208,12 @@ public class ModelGenerator {
     // TODO
   }
 
-  private boolean hasHigherEdges(AbstractNode parent, int currentLevel) {
-    // TODO 
+  private boolean hasHigherEdges(AbstractNode node, int currentLevel, List<Map<AbstractNode, Integer>> levelEdges) {
+    for(int i = currentLevel + 1, size = levelEdges.size(); i < size; i++) {
+      if(levelEdges.get(i).containsKey(node)) {
+        return true;
+      }
+    }
     return false;
   }
 
