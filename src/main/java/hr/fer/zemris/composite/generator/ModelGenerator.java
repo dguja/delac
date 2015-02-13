@@ -123,54 +123,45 @@ public class ModelGenerator {
   private List<AbstractNode> connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
       final List<Map<AbstractNode, Integer>> levelEdges, final List<AbstractNode> previousLevelNodes) {
 
-    final int l = nodes.size();
-    final int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
+    // number L
+    final int nodeCount = nodes.size();
+    // number P
+    final int edgeCount = calculateNumberOfEdges(levelEdges.get(currentLevel), nodeCount);
 
-    if (l == p) {
-      lEqualP(nodes, levelEdges, currentLevel, l);
-    } else if (l < p) {
+    if (nodeCount == edgeCount) {
+      lEqualP(nodes, levelEdges, currentLevel, nodeCount);
+    } else if (nodeCount < edgeCount) {
       final IntegerDistribution behaviorOfGenerator = discreteDistributions.get("d12");
       switch (behaviorOfGenerator.sample()) {
         case 1:
-          nodes.addAll(createNodes(p - l, currentLevel));
-          lEqualP(nodes, levelEdges, currentLevel, p);
+          nodes.addAll(createNodes(edgeCount - nodeCount, currentLevel));
+          lEqualP(nodes, levelEdges, currentLevel, edgeCount);
           break;
         case 2:
           Map<AbstractNode, Integer> parentsMap = levelEdges.get(currentLevel);
           final Set<AbstractNode> connectedChildren = new HashSet<>();
           for (final AbstractNode parent : parentsMap.keySet()) {
-            final int choosedEdges = RandomProvider.getRandom().nextInt(parentsMap.get(parent));
+            final int choosedEdges = getRandomInt(parentsMap.get(parent));
             final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
             connectedChildren.addAll(choosedChildren);
             for (int i = 0; i < choosedEdges; i++) {
               choosedChildren.get(i).addParent(parent);
             }
-            if (parent.getChildren().isEmpty() && !hasHigherEdges(parent, currentLevel, levelEdges)) {
-              removeNodeFromModel(parent);
-            }
           }
-          return new ArrayList<>(connectedChildren);
+          nodes.clear();
+          nodes.addAll(connectedChildren);
+          return new ArrayList<>(connectedChildren); // TODO remove
         case 3:
           parentsMap = levelEdges.get(currentLevel);
           final List<AbstractNode> parents = new ArrayList<>();
-          for (final AbstractNode parent : parentsMap.keySet()) {
-            for (int i = parentsMap.get(parent); i >= 0; i--) {
-              parents.add(parent);
+          for (final Map.Entry<AbstractNode, Integer> entry : parentsMap.entrySet()) {
+            for (int i = entry.getValue(); i >= 0; i--) {
+              parents.add(entry.getKey());
             }
           }
-          final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, l);
-          final Set<AbstractNode> parentsWithChildren = new HashSet<>(choosedParents);
-          for (int i = 0; i < l; i++) {
+          final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, nodeCount);
+          for (int i = 0; i < nodeCount; i++) {
             nodes.get(i).addParent(choosedParents.get(i));
-          }
-          for (final AbstractNode parent : parentsMap.keySet()) {
-            if (parentsWithChildren.contains(parent)) {
-              continue;
-            }
-            if (hasHigherEdges(parent, currentLevel, levelEdges)) {
-              continue;
-            }
-            removeNodeFromModel(parent);
           }
       }
     } else {
@@ -180,15 +171,14 @@ public class ModelGenerator {
         case 1:
           final int sizeOfPreviousNodes = previousLevelNodes.size();
           // stvori novih l-p veza
-          for (int i = l - p; i >= 0; i--) {
-            putEdgeInLevelEdges(levelEdges, currentLevel,
-                previousLevelNodes.get(RandomProvider.getRandom().nextInt(sizeOfPreviousNodes)));
+          for (int i = nodeCount - edgeCount; i >= 0; i--) {
+            putEdgeInLevelEdges(levelEdges, currentLevel, previousLevelNodes.get(getRandomInt(sizeOfPreviousNodes)));
           }
-          lEqualP(nodes, levelEdges, currentLevel, l);
+          lEqualP(nodes, levelEdges, currentLevel, nodeCount);
           break;
         case 2:
           final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-          final List<AbstractNode> choosed = RandomUtilities.choose(nodes, p);
+          final List<AbstractNode> choosed = RandomUtilities.choose(nodes, edgeCount);
           int index = 0;
           for (final AbstractNode parent : parents.keySet()) {
             for (int i = parents.get(parent); i >= 0; i--) {
@@ -197,24 +187,14 @@ public class ModelGenerator {
             }
           }
           // vrati samo one koji imaju roditelja
-          return choosed;
+          return choosed; // TODO remove
       }
     }
-    return nodes;
+    return nodes; // TODO remove
   }
 
-  private void removeNodeFromModel(final AbstractNode parent) {
-    // TODO
-  }
-
-  private boolean hasHigherEdges(final AbstractNode node, final int currentLevel,
-      final List<Map<AbstractNode, Integer>> levelEdges) {
-    for (int i = currentLevel + 1, size = levelEdges.size(); i < size; i++) {
-      if (levelEdges.get(i).containsKey(node)) {
-        return true;
-      }
-    }
-    return false;
+  private static int getRandomInt(final int rightBound) {
+    return RandomProvider.getRandom().nextInt(rightBound);
   }
 
   /**
@@ -241,15 +221,12 @@ public class ModelGenerator {
   }
 
   private int calculateNumberOfEdges(final Map<AbstractNode, Integer> map, final int numberOfChildrenNodes) {
-    int counter = 0;
-    for (final AbstractNode node : map.keySet()) {
-      int numberOfEdges = map.get(node);
-      if (numberOfEdges > numberOfChildrenNodes) {
-        numberOfEdges = numberOfChildrenNodes;
-      }
-      counter += numberOfEdges;
+    int totalCount = 0;
+    for (final int count : map.values()) {
+      totalCount += Math.min(map.get(count), numberOfChildrenNodes);
     }
-    return counter;
+
+    return totalCount;
   }
 
   private void createEdges(final List<AbstractNode> nodes, final int currentLevel, final int depthK,

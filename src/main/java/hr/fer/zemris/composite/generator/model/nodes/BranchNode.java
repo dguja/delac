@@ -21,21 +21,26 @@ public class BranchNode extends AbstractNode {
    */
   private static final long serialVersionUID = 1510309148428873743L;
 
-  protected List<Double> probabilities = new ArrayList<>();
+  private final List<Double> probabilities = new ArrayList<>();
 
-  private final RealDistribution distribution;
+  private double probabilitySum = 0.;
 
-  public BranchNode(final long id, final int level, final RealDistribution distribution) {
+  private final RealDistribution probabilityDistribution;
+
+  public BranchNode(final long id, final int level, final RealDistribution probabilityDistribution) {
     super(id, level);
 
-    this.distribution = distribution;
+    this.probabilityDistribution = probabilityDistribution;
   }
 
   @Override
   public boolean addParent(final AbstractNode parent) {
     super.addParent(parent);
 
-    probabilities.add(distribution.sample());
+    final double probability = probabilityDistribution.sample();
+
+    probabilities.add(probability);
+    probabilitySum += probability;
 
     return true;
   }
@@ -54,7 +59,7 @@ public class BranchNode extends AbstractNode {
         final double parentReliability = parents.get(i).getReliability();
 
         if ((mask & (1 << i)) == 0) {
-          falseProbability += probabilities.get(i);
+          falseProbability += probabilities.get(i) / probabilitySum;
           combReliability *= (1 - parentReliability);
         } else {
           combReliability *= parentReliability;

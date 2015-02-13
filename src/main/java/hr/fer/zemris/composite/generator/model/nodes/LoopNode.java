@@ -29,19 +29,10 @@ public class LoopNode extends AbstractNode {
   public void setNumRepetitions(final int numRepetitions) {
     this.numRepetitions = numRepetitions;
   }
-  
+
   @Override
   public boolean isFull() {
     return !parents.isEmpty();
-  }
-
-  @Override
-  public boolean addParent(final AbstractNode parent) {
-    if (isFull()) {
-      return false;
-    }
-
-    return super.addParent(parent);
   }
 
   @Override
