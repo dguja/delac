@@ -1,5 +1,7 @@
 package hr.fer.zemris.composite.generator;
 
+import hr.fer.zemris.composite.generator.exception.GeneratorException;
+import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.model.Dataset;
 
 import java.io.FileInputStream;
@@ -17,27 +19,31 @@ public class Main {
   public static void main(final String[] args) throws IOException {
     final ConfigParser parser = new ConfigParser();
 
-    final InputStream inputStream = new FileInputStream(CONFIG_FILE);
-
-    try {
+    try (final InputStream inputStream = new FileInputStream(CONFIG_FILE)) {
       parser.parse(inputStream);
     } catch (final ParseException exception) {
-      System.err.println(exception.getMessage());
-      System.exit(1);
+      exit(exception.getMessage());
     }
-
-    inputStream.close();
 
     final ModelGenerator generator =
         new ModelGenerator(parser.getModelCount(), parser.getCopyInputs(), parser.getDiscreteDistributions(),
             parser.getRealDistributions());
 
-    final Dataset dataset = generator.generate();
+    Dataset dataset = null;
+    try {
+      dataset = generator.generate();
+    } catch (final GeneratorException exception) {
+      exit(exception.getMessage());
+    }
 
-    final ObjectOutputStream objectStream = new ObjectOutputStream(new FileOutputStream(OUTPUT_FILE));
+    try (final ObjectOutputStream objectStream = new ObjectOutputStream(new FileOutputStream(OUTPUT_FILE))) {
+      objectStream.writeObject(dataset);
+    }
+  }
 
-    objectStream.writeObject(dataset);
-    objectStream.close();
+  private static void exit(final String message) {
+    System.err.println(message);
+    System.exit(1);
   }
 
 }

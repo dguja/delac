@@ -1,6 +1,7 @@
 package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.distribution.IntegerDistributionLimiter;
+import hr.fer.zemris.composite.generator.exception.GeneratorException;
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.Model;
@@ -17,7 +18,6 @@ import hr.fer.zemris.composite.generator.random.RandomUtilities;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -124,7 +124,7 @@ public class ModelGenerator {
       final List<Map<AbstractNode, Integer>> levelEdges, final List<AbstractNode> previousLevelNodes) {
 
     final int l = nodes.size();
-    int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
+    final int p = calculateNumberOfEdges(levelEdges.get(currentLevel), l);
 
     if (l == p) {
       lEqualP(nodes, levelEdges, currentLevel, l);
@@ -137,37 +137,37 @@ public class ModelGenerator {
           break;
         case 2:
           Map<AbstractNode, Integer> parentsMap = levelEdges.get(currentLevel);
-          Set<AbstractNode> connectedChildren = new HashSet<>();
-          for(AbstractNode parent : parentsMap.keySet()) {
-            int choosedEdges = RandomProvider.getRandom().nextInt(parentsMap.get(parent));
-            List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
+          final Set<AbstractNode> connectedChildren = new HashSet<>();
+          for (final AbstractNode parent : parentsMap.keySet()) {
+            final int choosedEdges = RandomProvider.getRandom().nextInt(parentsMap.get(parent));
+            final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
             connectedChildren.addAll(choosedChildren);
-            for(int i = 0; i < choosedEdges; i++) {
+            for (int i = 0; i < choosedEdges; i++) {
               choosedChildren.get(i).addParent(parent);
             }
-            if(parent.getChildren().isEmpty() && !hasHigherEdges(parent, currentLevel, levelEdges)) {
+            if (parent.getChildren().isEmpty() && !hasHigherEdges(parent, currentLevel, levelEdges)) {
               removeNodeFromModel(parent);
             }
           }
           return new ArrayList<>(connectedChildren);
         case 3:
           parentsMap = levelEdges.get(currentLevel);
-          List<AbstractNode> parents = new ArrayList<>();
-          for(AbstractNode parent : parentsMap.keySet()) {
-            for(int i = parentsMap.get(parent); i >= 0; i--) {
+          final List<AbstractNode> parents = new ArrayList<>();
+          for (final AbstractNode parent : parentsMap.keySet()) {
+            for (int i = parentsMap.get(parent); i >= 0; i--) {
               parents.add(parent);
             }
           }
-          List<AbstractNode> choosedParents = RandomUtilities.choose(parents, l);
-          Set<AbstractNode> parentsWithChildren = new HashSet<>(choosedParents);
-          for(int i = 0; i < l; i++) {
+          final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, l);
+          final Set<AbstractNode> parentsWithChildren = new HashSet<>(choosedParents);
+          for (int i = 0; i < l; i++) {
             nodes.get(i).addParent(choosedParents.get(i));
           }
-          for(AbstractNode parent : parentsMap.keySet()) {
-            if(parentsWithChildren.contains(parent)) {
+          for (final AbstractNode parent : parentsMap.keySet()) {
+            if (parentsWithChildren.contains(parent)) {
               continue;
             }
-            if(hasHigherEdges(parent, currentLevel, levelEdges)) {
+            if (hasHigherEdges(parent, currentLevel, levelEdges)) {
               continue;
             }
             removeNodeFromModel(parent);
@@ -203,14 +203,14 @@ public class ModelGenerator {
     return nodes;
   }
 
-
-  private void removeNodeFromModel(AbstractNode parent) {
+  private void removeNodeFromModel(final AbstractNode parent) {
     // TODO
   }
 
-  private boolean hasHigherEdges(AbstractNode node, int currentLevel, List<Map<AbstractNode, Integer>> levelEdges) {
-    for(int i = currentLevel + 1, size = levelEdges.size(); i < size; i++) {
-      if(levelEdges.get(i).containsKey(node)) {
+  private boolean hasHigherEdges(final AbstractNode node, final int currentLevel,
+      final List<Map<AbstractNode, Integer>> levelEdges) {
+    for (int i = currentLevel + 1, size = levelEdges.size(); i < size; i++) {
+      if (levelEdges.get(i).containsKey(node)) {
         return true;
       }
     }
@@ -227,13 +227,13 @@ public class ModelGenerator {
    * @param numberOfNodes
    */
   private void lEqualP(final List<AbstractNode> nodes, final List<Map<AbstractNode, Integer>> levelEdges,
-      final int currentLevel, int numberOfNodes) {
+      final int currentLevel, final int numberOfNodes) {
 
     final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-    List<AbstractNode> choosed = RandomUtilities.choose(nodes, numberOfNodes);
+    final List<AbstractNode> choosed = RandomUtilities.choose(nodes, numberOfNodes);
     int index = 0;
-    for(AbstractNode parent : parents.keySet()) {
-      for(int i = parents.get(parent); i >= 0; i--) {
+    for (final AbstractNode parent : parents.keySet()) {
+      for (int i = parents.get(parent); i >= 0; i--) {
         choosed.get(index).addParent(parent);
         index++;
       }
@@ -303,12 +303,12 @@ public class ModelGenerator {
 
     final int id = nextId();
 
-    AbstractNode node = null; // TODO makni null
+    final AbstractNode node;
     switch (nodeType) {
       case BRANCH:
         node = new BranchNode(id, level, realDistributions.get("p3"));
         break;
-        
+
       case SEQUENCE:
         node = new SequenceNode(id, level);
         break;
@@ -322,8 +322,7 @@ public class ModelGenerator {
         break;
 
       default:
-        // TODO exception
-        break;
+        throw new GeneratorException("Inner node distribution (d10) returned invalid node type: " + nodeType);
     }
 
     node.setWeight(realDistributions.get("p2").sample());

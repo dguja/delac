@@ -2,6 +2,7 @@ package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.distribution.IntegerDistributionLimiter;
 import hr.fer.zemris.composite.generator.distribution.RealDistributionLimiter;
+import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.random.RandomProvider;
 
 import java.io.InputStream;
