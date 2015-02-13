@@ -93,8 +93,7 @@ public abstract class AbstractNode implements Serializable {
       updateSet.addAll(node.getUpdateList(direction));
     }
 
-    final List<AbstractNode> updateList = new ArrayList<AbstractNode>(updateSet);
-    return updateList;
+    return new ArrayList<>(updateSet);
   }
 
   public void calculateReliability(final DirectionType direction) {

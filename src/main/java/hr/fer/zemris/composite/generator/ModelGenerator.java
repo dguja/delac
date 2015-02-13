@@ -42,8 +42,6 @@ public class ModelGenerator {
       final Map<String, RealDistribution> realDistributions) {
     super();
 
-    this.idCount = 0;
-
     this.modelCount = modelCount;
     this.copyInputs = copyInputs;
     this.discreteDistributions = discreteDistributions;
@@ -51,74 +49,82 @@ public class ModelGenerator {
   }
 
   public Dataset generate() {
+    idCount = 0;
+
     // 1
-    final int n = discreteDistributions.get("d1").sample();
+    final int inputNodeCount = discreteDistributions.get("inputNodeCount").sample();
 
     final List<InputNode> inputs = new ArrayList<>();
-    for (int i = 0; i < n; i++) {
-      inputs.add(new InputNode(nextId(), realDistributions.get("p1").sample()));
+    for (int i = 0; i < inputNodeCount; i++) {
+      inputs.add(new InputNode(nextId(), realDistributions.get("initialReliability").sample()));
     }
 
-    final IntegerDistribution mDistribution = new IntegerDistributionLimiter(discreteDistributions.get("d2"), 0, n);
+    final IntegerDistribution usedInputCountDistribution =
+        new IntegerDistributionLimiter(discreteDistributions.get("usedInputCount"), 0, inputNodeCount);
 
     final List<Model> models = new ArrayList<>();
     for (int i = 0; i < modelCount; i++) {
-      models.add(generateModel(inputs, mDistribution));
+      models.add(generateModel(inputs, usedInputCountDistribution));
     }
 
     return new Dataset(models);
   }
 
-  private Model generateModel(final List<InputNode> datasetInputs, final IntegerDistribution mDistribution) {
+  private Model
+      generateModel(final List<InputNode> datasetInputs, final IntegerDistribution usedInputCountDistribution) {
+    // TODO test levelNumber distribution
+    // TODO test levelNodeCount distribution
+
     // 2
-    final List<InputNode> originals = RandomUtilities.choose(datasetInputs, mDistribution.sample());
+    final List<InputNode> originalInputs = RandomUtilities.choose(datasetInputs, usedInputCountDistribution.sample());
 
     final List<InputNode> inputs = new ArrayList<>();
-    for (int i = 0; i < originals.size(); i++) {
-      inputs.add(copyInputs ? originals.get(i).clone() : originals.get(i));
+    for (int i = 0; i < originalInputs.size(); i++) {
+      inputs.add(copyInputs ? originalInputs.get(i).clone() : originalInputs.get(i));
     }
 
     // 3
-    final int k = discreteDistributions.get("d3").sample();
+    final int levelCount = discreteDistributions.get("levelCount").sample();
 
-    final List<Map<AbstractNode, Integer>> levelEdges = new ArrayList<>();
-    for (int i = 0; i < k; i++) {
-      levelEdges.add(new HashMap<AbstractNode, Integer>());
+    final List<Map<AbstractNode, Integer>> edges = new ArrayList<>();
+    for (int i = 0; i < levelCount; i++) {
+      edges.add(new HashMap<AbstractNode, Integer>());
     }
 
     List<AbstractNode> levelNodes = null;
     final List<AbstractNode> nodes = new ArrayList<>();
 
-    for (int i = 0; i < k - 1; i++) {
+    for (int i = 0; i < levelCount - 1; i++) {
       if (i == 0) {
         levelNodes = new ArrayList<AbstractNode>(inputs);
       } else {
         // 6
         final List<AbstractNode> previousLevelNodes = levelNodes;
-        levelNodes = createNodes(discreteDistributions.get("d11").sample(), i);
+        levelNodes = createNodes(discreteDistributions.get("levelNodeCount").sample(), i);
+
         // 7
-        connectNodes(levelNodes, i, k, levelEdges, previousLevelNodes);
+        connectNodes(levelNodes, i, levelCount, edges.get(i), previousLevelNodes);
       }
 
       nodes.addAll(levelNodes);
 
       // 4, 5
-      /*
-       * ako je na k - 2 razini, to je razina neposredno ispod izlaznog cvora, a oni svi moraju biti
-       * jednom vezom povezani s izlaznim cvorom pa nije potrebno generirati veze
-       */
-      if (i < k - 2) {
-        createEdges(levelNodes, i, k, levelEdges);
+      // ako je na k - 2 razini, to je razina neposredno ispod izlaznog cvora, a oni svi moraju biti
+      // jednom vezom povezani s izlaznim cvorom pa nije potrebno generirati veze
+      if (i < levelCount - 2) {
+        createEdges(levelNodes, i, levelCount, edges);
       }
     }
 
     // 8
-    final OutputNode output = new OutputNode(nextId(), k - 1);
+    final OutputNode output = new OutputNode(nextId(), levelCount - 1);
+
     // sve s K - 2 razine povezi s izlaznim jednom vezom
     for (final AbstractNode parent : levelNodes) {
       output.addParent(parent);
     }
-    for (final AbstractNode parent : levelEdges.get(k - 1).keySet()) {
+
+    for (final AbstractNode parent : edges.get(levelCount - 1).keySet()) {
       output.addParent(parent);
     }
 
@@ -132,63 +138,86 @@ public class ModelGenerator {
     return new Model(inputs, output);
   }
 
-  private void connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
-      final List<Map<AbstractNode, Integer>> levelEdges, final List<AbstractNode> previousLevelNodes) {
-
+  private void connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int levelNumber,
+      final Map<AbstractNode, Integer> levelEdges, final List<AbstractNode> previousLevelNodes) {
     // number L
     final int nodeCount = nodes.size();
     // number P
-    final int edgeCount = calculateNumberOfEdges(levelEdges.get(currentLevel), nodeCount);
+    final int edgeCount = calculateEdgeCount(levelEdges, nodeCount);
 
     if (nodeCount == edgeCount) {
-      lEqualP(nodes, levelEdges, currentLevel, nodeCount);
+      pairNodes(nodes, levelEdges, nodeCount);
     } else if (nodeCount < edgeCount) {
-      final IntegerDistribution behaviorOfGenerator = discreteDistributions.get("d12");
-      switch (behaviorOfGenerator.sample()) {
+      final int generatorBehavior = discreteDistributions.get("generatorBehaviorLesser").sample();
+
+      switch (generatorBehavior) {
         case 1:
           nodes.addAll(createNodes(edgeCount - nodeCount, currentLevel));
-          lEqualP(nodes, levelEdges, currentLevel, edgeCount);
+          pairNodes(nodes, levelEdges, edgeCount);
+
           break;
+
         case 2:
-          Map<AbstractNode, Integer> parentsMap = levelEdges.get(currentLevel);
           final Set<AbstractNode> connectedChildren = new HashSet<>();
-          for (final AbstractNode parent : parentsMap.keySet()) {
-            final int choosedEdges = RandomUtilities.getRandomInt(parentsMap.get(parent));
+
+          for (final AbstractNode parent : levelEdges.keySet()) {
+            final int choosedEdges = RandomUtilities.getRandomInt(levelEdges.get(parent));
             final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
+
             connectedChildren.addAll(choosedChildren);
             for (int i = 0; i < choosedEdges; i++) {
               choosedChildren.get(i).addParent(parent);
             }
           }
+
           setAll(nodes, connectedChildren);
+
+          break;
+
         case 3:
-          parentsMap = levelEdges.get(currentLevel);
           final List<AbstractNode> parents = new ArrayList<>();
-          for (final Map.Entry<AbstractNode, Integer> entry : parentsMap.entrySet()) {
+
+          for (final Map.Entry<AbstractNode, Integer> entry : levelEdges.entrySet()) {
             for (int i = entry.getValue(); i >= 0; i--) {
               parents.add(entry.getKey());
             }
           }
+
           final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, nodeCount);
           for (int i = 0; i < nodeCount; i++) {
             nodes.get(i).addParent(choosedParents.get(i));
           }
+
+          break;
+
+        default:
+          throw new GeneratorException("'generatorBehaviorLesser' distribution returned invalid value: "
+              + generatorBehavior + ".");
       }
     } else {
-      final IntegerDistribution behaviorOfGenerator =
-          new IntegerDistributionLimiter(discreteDistributions.get("d13"), 0, 2);
-      switch (behaviorOfGenerator.sample()) {
+      final int generatorBehavior = discreteDistributions.get("generatorBehaviorGreater").sample();
+
+      switch (generatorBehavior) {
         case 1:
-          final int sizeOfPreviousNodes = previousLevelNodes.size();
+          final int previousNodeCount = previousLevelNodes.size();
+
           // stvori novih l-p veza
           for (int i = nodeCount - edgeCount; i >= 0; i--) {
-            putEdgeInLevelEdges(levelEdges, currentLevel,
-                previousLevelNodes.get(RandomUtilities.getRandomInt(sizeOfPreviousNodes)));
+            addEdge(levelEdges, previousLevelNodes.get(RandomUtilities.getRandomInt(previousNodeCount)));
           }
-          lEqualP(nodes, levelEdges, currentLevel, nodeCount);
+
+          pairNodes(nodes, levelEdges, nodeCount);
+
           break;
+
         case 2:
-          setAll(nodes, lEqualP(nodes, levelEdges, currentLevel, edgeCount));
+          setAll(nodes, pairNodes(nodes, levelEdges, edgeCount));
+
+          break;
+
+        default:
+          throw new GeneratorException("'generatorBehaviorGreater' distribution returned invalid value: "
+              + generatorBehavior + ".");
       }
     }
   }
@@ -200,17 +229,16 @@ public class ModelGenerator {
    *          trenutnu razinu
    * @param levelEdges veze
    * @param currentLevel
-   * @param numberOfNodes
+   * @param nodeCount
    * @return
    */
-  private List<AbstractNode> lEqualP(final List<AbstractNode> nodes, final List<Map<AbstractNode, Integer>> levelEdges,
-      final int currentLevel, final int numberOfNodes) {
-
-    final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-    final List<AbstractNode> choosed = RandomUtilities.choose(nodes, numberOfNodes);
+  private List<AbstractNode> pairNodes(final List<AbstractNode> nodes, final Map<AbstractNode, Integer> levelEdges,
+      final int nodeCount) {
+    final List<AbstractNode> choosed = RandomUtilities.choose(nodes, nodeCount);
     int index = 0;
-    for (final AbstractNode parent : parents.keySet()) {
-      for (int i = parents.get(parent); i >= 0; i--) {
+
+    for (final AbstractNode parent : levelEdges.keySet()) {
+      for (int i = levelEdges.get(parent); i >= 0; i--) {
         choosed.get(index).addParent(parent);
         index++;
       }
@@ -219,30 +247,35 @@ public class ModelGenerator {
     return choosed;
   }
 
-  private int calculateNumberOfEdges(final Map<AbstractNode, Integer> map, final int numberOfChildrenNodes) {
+  private int calculateEdgeCount(final Map<AbstractNode, Integer> levelEdges, final int childrenNodeCount) {
     int totalCount = 0;
-    for (final int count : map.values()) {
-      totalCount += Math.min(map.get(count), numberOfChildrenNodes);
+
+    for (final AbstractNode parent : levelEdges.keySet()) {
+      final int count = Math.min(levelEdges.get(parent), childrenNodeCount);
+      levelEdges.put(parent, count);
+
+      totalCount += count;
     }
 
     return totalCount;
   }
 
-  private void createEdges(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
-      final List<Map<AbstractNode, Integer>> levelEdges) {
-
+  private void createEdges(final List<AbstractNode> nodes, final int currentLevel, final int levelCount,
+      final List<Map<AbstractNode, Integer>> edges) {
     final IntegerDistribution targetLevelDistribution =
-        new IntegerDistributionLimiter(discreteDistributions.get("d9"), 1, depthK - currentLevel);
+        new IntegerDistributionLimiter(discreteDistributions.get("targetLevel"), 1, levelCount - currentLevel);
 
     for (final AbstractNode node : nodes) {
       // 4
       final int edgeCount = discreteDistributions.get(node.getType().getDistributionName()).sample();
+
       // 5
       for (int j = 0; j < edgeCount; j++) {
         final int targetLevel = currentLevel + targetLevelDistribution.sample();
-        putEdgeInLevelEdges(levelEdges, targetLevel, node);
+        addEdge(edges.get(targetLevel), node);
       }
-      putEdgeInLevelEdges(levelEdges, currentLevel + 1, node);
+
+      addEdge(edges.get(currentLevel + 1), node);
     }
   }
 
@@ -253,36 +286,34 @@ public class ModelGenerator {
    * @param targetLevel razina na koju pokazuje veza
    * @param node roditelj veze
    */
-  private void putEdgeInLevelEdges(final List<Map<AbstractNode, Integer>> levelEdges, final int targetLevel,
-      final AbstractNode node) {
-    final Map<AbstractNode, Integer> targetEdges = levelEdges.get(targetLevel);
-
+  private void addEdge(final Map<AbstractNode, Integer> levelEdges, final AbstractNode node) {
     int previousValue = 0;
-    if (targetEdges.containsKey(node)) {
-      previousValue = targetEdges.get(node);
+
+    if (levelEdges.containsKey(node)) {
+      previousValue = levelEdges.get(node);
     }
 
-    targetEdges.put(node, previousValue + 1);
+    levelEdges.put(node, previousValue + 1);
   }
 
-  private List<AbstractNode> createNodes(final int numberOfNodes, final int level) {
-    final List<AbstractNode> nodes = new ArrayList<>(numberOfNodes);
+  private List<AbstractNode> createNodes(final int nodeCount, final int level) {
+    final List<AbstractNode> nodes = new ArrayList<>(nodeCount);
 
-    for (int i = 0; i < numberOfNodes; i++) {
+    for (int i = 0; i < nodeCount; i++) {
       nodes.add(newInstance(level));
     }
+
     return nodes;
   }
 
   private AbstractNode newInstance(final int level) {
-    final NodeType nodeType = NodeType.get(discreteDistributions.get("d10").sample());
-
+    final NodeType nodeType = NodeType.get(discreteDistributions.get("nodeType").sample());
     final int id = nextId();
 
     final AbstractNode node;
     switch (nodeType) {
       case BRANCH:
-        node = new BranchNode(id, level, realDistributions.get("p3"));
+        node = new BranchNode(id, level, realDistributions.get("branchProbability"));
         break;
 
       case SEQUENCE:
@@ -290,7 +321,8 @@ public class ModelGenerator {
         break;
 
       case PARALLEL:
-        node = new ParallelNode(id, level, discreteDistributions.get("p4").sample());
+        node = new ParallelNode(id, level, discreteDistributions.get("paralleParameter").sample()); // TODO
+                                                                                                    // fix
         break;
 
       case LOOP:
@@ -298,10 +330,10 @@ public class ModelGenerator {
         break;
 
       default:
-        throw new GeneratorException("Inner node distribution (d10) returned invalid node type: " + nodeType);
+        throw new GeneratorException("'nodeType' distribution returned invalid node type: " + nodeType + ".");
     }
 
-    node.setWeight(realDistributions.get("p2").sample());
+    node.setWeight(realDistributions.get("nodeWeight").sample());
 
     return node;
   }

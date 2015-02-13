@@ -12,11 +12,13 @@ public class InputNode extends AbstractNode implements Cloneable {
 
   public InputNode(final long id, final double reliability) {
     super(id, 0);
+
     this.reliability = reliability;
   }
 
   private InputNode(final InputNode other) {
     super(other.id, other.level);
+
     this.reliability = other.reliability;
     this.weight = other.weight;
   }
