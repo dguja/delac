@@ -18,4 +18,8 @@ public class RandomUtilities {
     return result;
   }
 
+  public static int getRandomInt(final int rightBound) {
+    return RandomProvider.getRandom().nextInt(rightBound);
+  }
+
 }

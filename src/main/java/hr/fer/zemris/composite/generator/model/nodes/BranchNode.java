@@ -46,6 +46,14 @@ public class BranchNode extends AbstractNode {
   }
 
   @Override
+  public void clearParents() {
+    probabilities.clear();
+    probabilitySum = 0.;
+
+    super.clearParents();
+  }
+
+  @Override
   protected void calculateDirectReliability() {
     final int numParents = parents.size();
     final int numCombinations = 1 << numParents;

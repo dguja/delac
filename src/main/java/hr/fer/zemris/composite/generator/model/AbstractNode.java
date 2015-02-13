@@ -87,8 +87,9 @@ public abstract class AbstractNode implements Serializable {
       nodes = parents;
     }
 
+    updateSet.add(this);
+
     for (final AbstractNode node : nodes) {
-      updateSet.add(node);
       updateSet.addAll(node.getUpdateList(direction));
     }
 
@@ -145,6 +146,18 @@ public abstract class AbstractNode implements Serializable {
 
   protected void addChild(final AbstractNode child) {
     children.add(child);
+  }
+
+  public void clearParents() {
+    for (final AbstractNode parent : parents) {
+      parent.removeChild(this);
+    }
+
+    parents.clear();
+  }
+
+  private void removeChild(final AbstractNode child) {
+    children.remove(child);
   }
 
   protected abstract void calculateDirectReliability();

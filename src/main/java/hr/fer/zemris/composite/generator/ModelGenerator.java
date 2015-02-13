@@ -12,10 +12,10 @@ import hr.fer.zemris.composite.generator.model.nodes.LoopNode;
 import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 import hr.fer.zemris.composite.generator.model.nodes.ParallelNode;
 import hr.fer.zemris.composite.generator.model.nodes.SequenceNode;
-import hr.fer.zemris.composite.generator.random.RandomProvider;
 import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,41 +86,53 @@ public class ModelGenerator {
       levelEdges.add(new HashMap<AbstractNode, Integer>());
     }
 
-    List<AbstractNode> nodes = null;
+    List<AbstractNode> levelNodes = null;
+    final List<AbstractNode> nodes = new ArrayList<>();
+
     for (int i = 0; i < k - 1; i++) {
       if (i == 0) {
-        nodes = new ArrayList<AbstractNode>(inputs);
+        levelNodes = new ArrayList<AbstractNode>(inputs);
       } else {
         // 6
-        final List<AbstractNode> previousLevelNodes = nodes;
-        nodes = createNodes(discreteDistributions.get("d11").sample(), i);
+        final List<AbstractNode> previousLevelNodes = levelNodes;
+        levelNodes = createNodes(discreteDistributions.get("d11").sample(), i);
         // 7
-        nodes = connectNodes(nodes, i, k, levelEdges, previousLevelNodes);
+        connectNodes(levelNodes, i, k, levelEdges, previousLevelNodes);
       }
+
+      nodes.addAll(levelNodes);
+
       // 4, 5
       /*
        * ako je na k - 2 razini, to je razina neposredno ispod izlaznog cvora, a oni svi moraju biti
        * jednom vezom povezani s izlaznim cvorom pa nije potrebno generirati veze
        */
       if (i < k - 2) {
-        createEdges(nodes, i, k, levelEdges);
+        createEdges(levelNodes, i, k, levelEdges);
       }
     }
 
     // 8
     final OutputNode output = new OutputNode(nextId(), k - 1);
     // sve s K - 2 razine povezi s izlaznim jednom vezom
-    for (final AbstractNode parent : nodes) {
+    for (final AbstractNode parent : levelNodes) {
       output.addParent(parent);
     }
     for (final AbstractNode parent : levelEdges.get(k - 1).keySet()) {
       output.addParent(parent);
     }
 
+    for (int i = nodes.size(); i >= 0; i--) {
+      final AbstractNode node = nodes.get(i);
+      if (node.getChildren().isEmpty()) {
+        node.clearParents();
+      }
+    }
+
     return new Model(inputs, output);
   }
 
-  private List<AbstractNode> connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
+  private void connectNodes(final List<AbstractNode> nodes, final int currentLevel, final int depthK,
       final List<Map<AbstractNode, Integer>> levelEdges, final List<AbstractNode> previousLevelNodes) {
 
     // number L
@@ -141,16 +153,14 @@ public class ModelGenerator {
           Map<AbstractNode, Integer> parentsMap = levelEdges.get(currentLevel);
           final Set<AbstractNode> connectedChildren = new HashSet<>();
           for (final AbstractNode parent : parentsMap.keySet()) {
-            final int choosedEdges = getRandomInt(parentsMap.get(parent));
+            final int choosedEdges = RandomUtilities.getRandomInt(parentsMap.get(parent));
             final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
             connectedChildren.addAll(choosedChildren);
             for (int i = 0; i < choosedEdges; i++) {
               choosedChildren.get(i).addParent(parent);
             }
           }
-          nodes.clear();
-          nodes.addAll(connectedChildren);
-          return new ArrayList<>(connectedChildren); // TODO remove
+          setAll(nodes, connectedChildren);
         case 3:
           parentsMap = levelEdges.get(currentLevel);
           final List<AbstractNode> parents = new ArrayList<>();
@@ -172,29 +182,15 @@ public class ModelGenerator {
           final int sizeOfPreviousNodes = previousLevelNodes.size();
           // stvori novih l-p veza
           for (int i = nodeCount - edgeCount; i >= 0; i--) {
-            putEdgeInLevelEdges(levelEdges, currentLevel, previousLevelNodes.get(getRandomInt(sizeOfPreviousNodes)));
+            putEdgeInLevelEdges(levelEdges, currentLevel,
+                previousLevelNodes.get(RandomUtilities.getRandomInt(sizeOfPreviousNodes)));
           }
           lEqualP(nodes, levelEdges, currentLevel, nodeCount);
           break;
         case 2:
-          final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
-          final List<AbstractNode> choosed = RandomUtilities.choose(nodes, edgeCount);
-          int index = 0;
-          for (final AbstractNode parent : parents.keySet()) {
-            for (int i = parents.get(parent); i >= 0; i--) {
-              choosed.get(index).addParent(parent);
-              index++;
-            }
-          }
-          // vrati samo one koji imaju roditelja
-          return choosed; // TODO remove
+          setAll(nodes, lEqualP(nodes, levelEdges, currentLevel, edgeCount));
       }
     }
-    return nodes; // TODO remove
-  }
-
-  private static int getRandomInt(final int rightBound) {
-    return RandomProvider.getRandom().nextInt(rightBound);
   }
 
   /**
@@ -205,8 +201,9 @@ public class ModelGenerator {
    * @param levelEdges veze
    * @param currentLevel
    * @param numberOfNodes
+   * @return
    */
-  private void lEqualP(final List<AbstractNode> nodes, final List<Map<AbstractNode, Integer>> levelEdges,
+  private List<AbstractNode> lEqualP(final List<AbstractNode> nodes, final List<Map<AbstractNode, Integer>> levelEdges,
       final int currentLevel, final int numberOfNodes) {
 
     final Map<AbstractNode, Integer> parents = levelEdges.get(currentLevel);
@@ -218,6 +215,8 @@ public class ModelGenerator {
         index++;
       }
     }
+
+    return choosed;
   }
 
   private int calculateNumberOfEdges(final Map<AbstractNode, Integer> map, final int numberOfChildrenNodes) {
@@ -309,6 +308,11 @@ public class ModelGenerator {
 
   private int nextId() {
     return idCount++;
+  }
+
+  private static <T> void setAll(final Collection<T> destination, final Collection<T> source) {
+    destination.clear();
+    destination.addAll(source);
   }
 
 }
