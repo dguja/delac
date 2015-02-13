@@ -321,8 +321,7 @@ public class ModelGenerator {
         break;
 
       case PARALLEL:
-        node = new ParallelNode(id, level, discreteDistributions.get("paralleParameter").sample()); // TODO
-                                                                                                    // fix
+        node = new ParallelNode(id, level, discreteDistributions.get("paralleParameter"));
         break;
 
       case LOOP:

@@ -16,7 +16,7 @@ public class LoopNode extends AbstractNode {
    */
   private static final long serialVersionUID = 2416008536138769590L;
 
-  protected int numRepetitions;
+  private int numRepetitions;
 
   public LoopNode(final long id, final int level) {
     super(id, level);

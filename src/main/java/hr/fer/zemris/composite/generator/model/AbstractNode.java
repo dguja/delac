@@ -1,7 +1,5 @@
 package hr.fer.zemris.composite.generator.model;
 
-import hr.fer.zemris.composite.generator.model.nodes.DirectionType;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
