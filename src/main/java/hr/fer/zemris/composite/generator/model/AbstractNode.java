@@ -156,6 +156,10 @@ public abstract class AbstractNode implements Serializable {
   private void removeChild(final AbstractNode child) {
     children.remove(child);
   }
+  
+  public void reset() {
+	  // TODO
+  }
 
   protected abstract void calculateDirectReliability();
 
