@@ -12,7 +12,7 @@ public enum NodeType {
   }
 
   public String getDistributionName() {
-    return "childCount_" + (index + 4);
+    return "childCount_" + index;
   }
 
   public static NodeType get(final int index) {

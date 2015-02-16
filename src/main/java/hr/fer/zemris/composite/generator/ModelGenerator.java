@@ -156,6 +156,10 @@ public class ModelGenerator {
       final AbstractNode node = nodes.get(i);
       if (node.getChildren().isEmpty()) {
         node.clearParents();
+
+        if (node.getLevel() == 0) {
+          inputs.remove(node);
+        }
       }
     }
 
@@ -184,8 +188,12 @@ public class ModelGenerator {
         case 2:
           final Set<AbstractNode> connectedChildren = new HashSet<>();
 
+          System.err.println("Level: " + currentLevel);
+
           for (final AbstractNode parent : levelEdges.keySet()) {
             final int choosedEdges = RandomUtilities.getRandomInt(levelEdges.get(parent));
+            System.err.print(choosedEdges + " ");
+
             final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
 
             connectedChildren.addAll(choosedChildren);
@@ -193,6 +201,8 @@ public class ModelGenerator {
               choosedChildren.get(i).addParent(parent);
             }
           }
+
+          System.err.println();
 
           setAll(nodes, connectedChildren);
 
@@ -226,7 +236,7 @@ public class ModelGenerator {
           final int previousNodeCount = previousLevelNodes.size();
 
           // stvori novih l-p veza
-          for (int i = nodeCount - edgeCount; i >= 0; i--) {
+          for (int i = nodeCount - edgeCount - 1; i >= 0; i--) {
             addEdge(levelEdges, previousLevelNodes.get(RandomUtilities.getRandomInt(previousNodeCount)));
           }
 
@@ -355,7 +365,7 @@ public class ModelGenerator {
         break;
 
       case LOOP:
-        node = new LoopNode(id, level);
+        node = new LoopNode(id, level, discreteDistributions.get("repetitionCount").sample());
         break;
 
       default:

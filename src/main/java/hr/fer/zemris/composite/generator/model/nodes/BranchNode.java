@@ -94,4 +94,9 @@ public class BranchNode extends AbstractNode {
     return NodeType.BRANCH;
   }
 
+  @Override
+  protected String getParameterText() {
+    return "";
+  }
+
 }

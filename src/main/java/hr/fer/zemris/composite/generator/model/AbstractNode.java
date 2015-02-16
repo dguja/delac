@@ -166,6 +166,13 @@ public abstract class AbstractNode implements Serializable {
 
   protected abstract void calculateDirectReliability();
 
+  protected abstract String getParameterText();
+
+  public String getLabel() {
+    return id + ": " + getType().toString().toLowerCase() + " [" + getParameterText() + "]\\n"
+        + String.format("%.3f", reliability);
+  }
+
   public abstract NodeType getType();
 
 }

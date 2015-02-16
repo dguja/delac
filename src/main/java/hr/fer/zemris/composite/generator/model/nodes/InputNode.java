@@ -45,4 +45,9 @@ public class InputNode extends AbstractNode implements Cloneable {
   @Override
   protected void calculateDirectReliability() {}
 
+  @Override
+  protected String getParameterText() {
+    return "";
+  }
+
 }

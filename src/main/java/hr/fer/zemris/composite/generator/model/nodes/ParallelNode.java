@@ -83,4 +83,9 @@ public class ParallelNode extends AbstractNode {
     return NodeType.PARALLEL;
   }
 
+  @Override
+  protected String getParameterText() {
+    return Integer.toString(k);
+  }
+
 }
