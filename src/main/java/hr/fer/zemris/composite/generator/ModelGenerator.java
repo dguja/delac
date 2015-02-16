@@ -16,6 +16,7 @@ import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -199,23 +200,35 @@ public class ModelGenerator {
             loops.get(i).addParent(loopParents.get(i));
           }
 
-          parents.removeAll(loopParents);
-          final List<AbstractNode> otherNodes = new ArrayList<>();
-
-          final Set<AbstractNode> connectedChildren = new HashSet<>();
-
-          for (final AbstractNode parent : levelEdges.keySet()) {
-            final int choosedEdges = RandomUtilities.getRandomInt(levelEdges.get(parent));
-
-            final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
-
-            connectedChildren.addAll(choosedChildren);
-            for (int i = 0; i < choosedEdges; i++) {
-              choosedChildren.get(i).addParent(parent);
-            }
+          for (final AbstractNode node : loopParents) {
+            parents.remove(parents.indexOf(node));
           }
 
-          setAll(nodes, connectedChildren);
+          final List<AbstractNode> otherNodes = new ArrayList<>(nodes);
+          otherNodes.removeAll(loops);
+
+          List<Integer> indices = new ArrayList<>();
+          for (int i = 0; i < parents.size() - 1; i++) {
+            indices.add(i);
+          }
+
+          indices = RandomUtilities.choose(indices, otherNodes.size() - 1);
+
+          indices.add(-1);
+          Collections.sort(indices);
+          indices.add(parents.size() - 1);
+
+          for (int i = 0; i < otherNodes.size(); i++) {
+            final Set<AbstractNode> currentParents = new HashSet<>();
+
+            for (int j = indices.get(i) + 1; j <= indices.get(i + 1); j++) {
+              currentParents.add(parents.get(j));
+            }
+
+            for (final AbstractNode parent : currentParents) {
+              otherNodes.get(i).addParent(parent);
+            }
+          }
 
           break;
 

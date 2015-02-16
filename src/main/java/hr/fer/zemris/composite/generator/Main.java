@@ -21,7 +21,7 @@ public class Main {
   private static String OUTPUT_FILE_FORMAT = "other/output/graph%d.dot";
 
   public static void main(final String[] args) throws IOException {
-    final long millis = 1424108553902l; // System.currentTimeMillis();
+    final long millis = System.currentTimeMillis();
 
     System.err.println(millis);
     RandomProvider.getRandom().setSeed(millis);
