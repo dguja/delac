@@ -1,6 +1,6 @@
 package hr.fer.zemris.composite.generator;
 
-import hr.fer.zemris.composite.generator.dot.DotUtilities;
+import hr.fer.zemris.composite.generator.OutputUtilities;
 import hr.fer.zemris.composite.generator.exception.GeneratorException;
 import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.model.Dataset;
@@ -18,8 +18,13 @@ public class Main {
 
   private static String CONFIG_FILE = "conf.json";
 
-  private static String OUTPUT_FILE_FORMAT = "other/output/graph%d.dot";
+  private static String OUTPUT_DOT_FILE_FORMAT = "other/output/graph%d.dot";
+  
+  private static String OUTPUT_PNG_FILE_FORMAT = "output/graph%d.png";
 
+  private static String HTML_FILE = "other/output.html";
+
+  
   public static void main(final String[] args) throws IOException {
     final long millis = System.currentTimeMillis();
 
@@ -50,9 +55,13 @@ public class Main {
       final Model model = dataset.getModels().get(i);
       model.getOutput().calculateReliability(DirectionType.PARENT);
 
-      final String filename = String.format(OUTPUT_FILE_FORMAT, i);
-      Files.write(Paths.get(filename), DotUtilities.toDot(model, "test").getBytes());
+      final String dotFile = String.format(OUTPUT_DOT_FILE_FORMAT, i);
+      Files.write(Paths.get(dotFile), OutputUtilities.toDot(model, "test").getBytes());
     }
+    
+    final String htmlFile = String.format(HTML_FILE);
+    Files.write(Paths.get(htmlFile), OutputUtilities.toHtml(dataset.getModels().size(), OUTPUT_PNG_FILE_FORMAT).getBytes());
+    
   }
 
   private static void exit(final String message) {

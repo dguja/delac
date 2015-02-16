@@ -1,4 +1,4 @@
-package hr.fer.zemris.composite.generator.dot;
+package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.Model;
@@ -9,12 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DotUtilities {
+public class OutputUtilities {
 
   private static final int INDENT_SIZE = 2;
-  
+
   private static int indent = 0;
-  
+
   public static String toDot(final Model model, final String graphName) {
     final Set<AbstractNode> nodes = new HashSet<>();
 
@@ -29,7 +29,7 @@ public class DotUtilities {
     putLine(builder, "clusterrank=local;");
     putLine(builder, "ranksep=\"1.2 equally\";");
     putLine(builder, "");
-    
+
     final List<List<AbstractNode>> levels = new ArrayList<>();
 
     final int levelCount = model.getOutput().getLevel();
@@ -44,11 +44,14 @@ public class DotUtilities {
       for (int i = 0; i < parentSize; ++i) {
         final AbstractNode parent = node.getParents().get(i);
         String line = node.getId() + " -> " + parent.getId();
-        
+
         if (node instanceof BranchNode) {
-          line += " [label=\"" + String.format("%.3f", ((BranchNode)node).getNormalizedProbabilities().get(i)) + "\"]";
+          line +=
+              " [label=\""
+                  + String.format("%.3f", ((BranchNode) node).getNormalizedProbabilities().get(i))
+                  + "\"]";
         }
-        
+
         line += ";";
         putLine(builder, line);
       }
@@ -73,7 +76,7 @@ public class DotUtilities {
       for (final AbstractNode node : level) {
         putLine(builder, node.getId() + " [label=\"" + node.getLabel() + "\"];");
       }
-      
+
       decrementIndent();
       putLine(builder, "}");
     }
@@ -83,22 +86,52 @@ public class DotUtilities {
 
     return builder.toString();
   }
+
+  public static String toHtml(int size, String fileFormat) {
+    StringBuilder builder = new StringBuilder();
+    putLine(builder, "<html>");
+    incrementIndent();
+    putLine(builder, "<head>");
+    incrementIndent();
+    putLine(builder, "<style>");
+    incrementIndent();
+    putLine(builder, "img {");
+    incrementIndent();
+    putLine(builder, "margin-top: 50px;");
+    decrementIndent();
+    putLine(builder, ";");
+    decrementIndent();
+    putLine(builder, "</style>");
+    decrementIndent();
+    putLine(builder, "</head>");
+    putLine(builder, "<body>");
+    incrementIndent();
   
+    for (int i = 0; i < size; i++) {
+      putLine(builder, "<img src=\""+ String.format(fileFormat, i) +"\"/><br/>");
+    }
+    decrementIndent();
+    putLine(builder, "</body>");
+    decrementIndent();
+    putLine(builder, "</html>");
+    return builder.toString();
+  }
+
   private static void putLine(StringBuilder builder, String line) {
     putIndent(builder);
     builder.append(line + "\n");
   }
-  
+
   private static void putIndent(StringBuilder builder) {
     for (int i = 0; i < indent; ++i) {
       builder.append(' ');
     }
   }
-  
+
   private static void incrementIndent() {
     indent += INDENT_SIZE;
   }
-  
+
   private static void decrementIndent() {
     indent -= INDENT_SIZE;
   }
