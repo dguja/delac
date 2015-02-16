@@ -24,7 +24,7 @@ public class InputNode extends AbstractNode implements Cloneable {
   }
 
   @Override
-  public boolean addParent(final AbstractNode parent) {
+  public void addParent(final AbstractNode parent) {
     throw new UnsupportedOperationException("InputNode can't have parents.");
   }
 

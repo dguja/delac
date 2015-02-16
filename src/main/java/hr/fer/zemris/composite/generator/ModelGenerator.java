@@ -176,8 +176,9 @@ public class ModelGenerator {
     if (nodeCount == edgeCount) {
       pairNodes(nodes, levelEdges, nodeCount);
     } else if (nodeCount < edgeCount) {
-      final int generatorBehavior = discreteDistributions.get("generatorBehaviorLesser").sample();
+      final List<AbstractNode> parents = linearizeEdges(levelEdges);
 
+      final int generatorBehavior = discreteDistributions.get("generatorBehaviorLesser").sample();
       switch (generatorBehavior) {
         case 1:
           nodes.addAll(createNodes(edgeCount - nodeCount, currentLevel));
@@ -186,13 +187,25 @@ public class ModelGenerator {
           break;
 
         case 2:
-          final Set<AbstractNode> connectedChildren = new HashSet<>();
+          final List<AbstractNode> loops = new ArrayList<>();
+          for (final AbstractNode node : nodes) {
+            if (node.getType() == NodeType.LOOP) {
+              loops.add(node);
+            }
+          }
 
-          System.err.println("Level: " + currentLevel);
+          final List<AbstractNode> loopParents = RandomUtilities.choose(parents, loops.size());
+          for (int i = 0; i < loops.size(); i++) {
+            loops.get(i).addParent(loopParents.get(i));
+          }
+
+          parents.removeAll(loopParents);
+          final List<AbstractNode> otherNodes = new ArrayList<>();
+
+          final Set<AbstractNode> connectedChildren = new HashSet<>();
 
           for (final AbstractNode parent : levelEdges.keySet()) {
             final int choosedEdges = RandomUtilities.getRandomInt(levelEdges.get(parent));
-            System.err.print(choosedEdges + " ");
 
             final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
 
@@ -202,21 +215,11 @@ public class ModelGenerator {
             }
           }
 
-          System.err.println();
-
           setAll(nodes, connectedChildren);
 
           break;
 
         case 3:
-          final List<AbstractNode> parents = new ArrayList<>();
-
-          for (final Map.Entry<AbstractNode, Integer> entry : levelEdges.entrySet()) {
-            for (int i = entry.getValue(); i >= 0; i--) {
-              parents.add(entry.getKey());
-            }
-          }
-
           final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, nodeCount);
           for (int i = 0; i < nodeCount; i++) {
             nodes.get(i).addParent(choosedParents.get(i));
@@ -254,6 +257,17 @@ public class ModelGenerator {
               + generatorBehavior + ".");
       }
     }
+  }
+
+  private List<AbstractNode> linearizeEdges(final Map<AbstractNode, Integer> levelEdges) {
+    final List<AbstractNode> parents = new ArrayList<>();
+
+    for (final Map.Entry<AbstractNode, Integer> entry : levelEdges.entrySet()) {
+      for (int i = entry.getValue() - 1; i >= 0; i--) {
+        parents.add(entry.getKey());
+      }
+    }
+    return parents;
   }
 
   /**
