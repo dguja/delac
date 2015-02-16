@@ -11,17 +11,25 @@ import java.util.Set;
 
 public class DotUtilities {
 
+  private static final int INDENT_SIZE = 2;
+  
+  private static int indent = 0;
+  
   public static String toDot(final Model model, final String graphName) {
-    final Set<AbstractNode> visited = new HashSet<>();
+    final Set<AbstractNode> nodes = new HashSet<>();
 
     for (final AbstractNode input : model.getInputs()) {
-      getNodes(input, visited);
+      getNodes(input, nodes);
     }
 
     final StringBuilder builder = new StringBuilder();
 
-    builder.append("digraph ").append(graphName).append(" {\nclusterrank=local;\n");
-
+    putLine(builder, "digraph " + graphName + " {");
+    incrementIndent();
+    putLine(builder, "clusterrank=local;");
+    putLine(builder, "ranksep=\"1.2 equally\";");
+    putLine(builder, "");
+    
     final List<List<AbstractNode>> levels = new ArrayList<>();
 
     final int levelCount = model.getOutput().getLevel();
@@ -29,23 +37,24 @@ public class DotUtilities {
       levels.add(new ArrayList<AbstractNode>());
     }
 
-    for (final AbstractNode node : visited) {
+    for (final AbstractNode node : nodes) {
       levels.get(node.getLevel()).add(node);
 
       int parentSize = node.getParents().size();
       for (int i = 0; i < parentSize; ++i) {
         final AbstractNode parent = node.getParents().get(i);
-        builder.append(node.getId()).append(" -> ").append(parent.getId());
+        String line = node.getId() + " -> " + parent.getId();
         
         if (node instanceof BranchNode) {
-          builder.append(" [label=\"" + String.format("%.3f", ((BranchNode)node).getNormalizedProbabilities().get(i)) + "\"]");
+          line += " [label=\"" + String.format("%.3f", ((BranchNode)node).getNormalizedProbabilities().get(i)) + "\"]";
         }
         
-        builder.append(";\n");
+        line += ";";
+        putLine(builder, line);
       }
     }
 
-    builder.append("\n");
+    putLine(builder, "");
 
     for (int i = 0; i < levels.size(); i++) {
       final List<AbstractNode> level = levels.get(i);
@@ -55,29 +64,54 @@ public class DotUtilities {
         continue;
       }
 
-      builder.append("subgraph cluster_" + i + " {\nrank=same;\n");
+      putLine(builder, "subgraph cluster_" + i + " {");
+      incrementIndent();
+      putLine(builder, "label=\"level " + i + "\"");
+      putLine(builder, "rank=same;");
+      putLine(builder, "color=blue;");
 
       for (final AbstractNode node : level) {
-        builder.append(node.getId() + " [label=\"" + node.getLabel() + "\"];" + "\n");
+        putLine(builder, node.getId() + " [label=\"" + node.getLabel() + "\"];");
       }
-
-      builder.append("color=blue;\nlabel=\"level " + i + "\"\n}\n");
+      
+      decrementIndent();
+      putLine(builder, "}");
     }
 
-    builder.append("}");
+    decrementIndent();
+    putLine(builder, "}");
 
     return builder.toString();
   }
+  
+  private static void putLine(StringBuilder builder, String line) {
+    putIndent(builder);
+    builder.append(line + "\n");
+  }
+  
+  private static void putIndent(StringBuilder builder) {
+    for (int i = 0; i < indent; ++i) {
+      builder.append(' ');
+    }
+  }
+  
+  private static void incrementIndent() {
+    indent += INDENT_SIZE;
+  }
+  
+  private static void decrementIndent() {
+    indent -= INDENT_SIZE;
+  }
 
-  private static void getNodes(final AbstractNode node, final Set<AbstractNode> visited) {
-    if (visited.contains(node)) {
+  private static void getNodes(final AbstractNode node, final Set<AbstractNode> nodes) {
+    if (nodes.contains(node)) {
       return;
     }
 
-    visited.add(node);
+    nodes.add(node);
 
     for (final AbstractNode child : node.getChildren()) {
-      getNodes(child, visited);
+      getNodes(child, nodes);
     }
   }
 
