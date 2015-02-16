@@ -1,5 +1,7 @@
 package hr.fer.zemris.composite.generator.distribution;
 
+import hr.fer.zemris.composite.generator.random.RandomProvider;
+
 import org.apache.commons.math3.distribution.AbstractIntegerDistribution;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
@@ -25,7 +27,7 @@ public class IntegerDistributionLimiter extends AbstractIntegerDistribution {
   private final double leftSum;
 
   public IntegerDistributionLimiter(final IntegerDistribution distribution, final int leftBound, final int rightBound) {
-    super(null);
+    super(RandomProvider.getGenerator());
 
     if (leftBound > rightBound) {
       throw new IllegalArgumentException("Left bound is greater than right.");

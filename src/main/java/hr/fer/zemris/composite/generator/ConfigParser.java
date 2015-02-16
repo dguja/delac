@@ -67,16 +67,15 @@ public class ConfigParser {
   private static final String ERROR_REAL_DISTRIBUTIONS_PARAMETER =
       "Error while parsing a real distribution at position ";
 
-  private static final String ERROR_REAL_DISTRIBUTIONS_NAME =
-      "Error while parsing a real distribution with name ";
+  private static final String ERROR_REAL_DISTRIBUTIONS_NAME = "Error while parsing a real distribution with name ";
 
   private int modelCount;
 
   private boolean copyInputs;
 
-  private Map<String, IntegerDistribution> discreteDistributions = new HashMap<>();
+  private final Map<String, IntegerDistribution> discreteDistributions = new HashMap<>();
 
-  private Map<String, RealDistribution> realDistributions = new HashMap<>();
+  private final Map<String, RealDistribution> realDistributions = new HashMap<>();
 
   /**
    * Fills <code>modelCount</code>, <code>copyInputs</code>, <code>discreteDistributions</code> and
@@ -88,9 +87,7 @@ public class ConfigParser {
     final JsonParser parser = new JsonParser();
     JsonObject root = null;
     try {
-      root =
-          parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-              .getAsJsonObject();
+      root = parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).getAsJsonObject();
     } catch (JsonParseException | IllegalStateException ex) {
       throw new ParseException("Not valid JSON file.");
     }
@@ -100,8 +97,7 @@ public class ConfigParser {
     copyInputs = getBoolean(root, "copyInputs", ERROR_ROOT_PARAMETER);
 
     if (root.has("discreteDistributions")) {
-      final JsonArray discreteDistributions =
-          getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
+      final JsonArray discreteDistributions = getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
       for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
         final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
         putDiscreteDistribution(current, ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER + i + ". ");
@@ -109,16 +105,14 @@ public class ConfigParser {
     }
 
     if (root.has("realDistributions")) {
-      final JsonArray realDistributions =
-          getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
+      final JsonArray realDistributions = getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
       for (int i = 0, size = realDistributions.size(); i < size; i++) {
         final JsonObject current = realDistributions.get(i).getAsJsonObject();
         putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
       }
     }
     if (root.has("discreteDistributions")) {
-      final JsonArray discreteDistributions =
-          getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
+      final JsonArray discreteDistributions = getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
       for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
         final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
         putDiscreteDistribution(current, ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER + i + ". ");
@@ -126,8 +120,7 @@ public class ConfigParser {
     }
 
     if (root.has("realDistributions")) {
-      final JsonArray realDistributions =
-          getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
+      final JsonArray realDistributions = getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
       for (int i = 0, size = realDistributions.size(); i < size; i++) {
         final JsonObject current = realDistributions.get(i).getAsJsonObject();
         putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
@@ -138,12 +131,11 @@ public class ConfigParser {
   private void putDiscreteDistribution(final JsonObject current, final String error) {
     final String name = getString(current, "name", error);
     final JsonObject distribution = getJsonObject(current, "distribution", error);
-    final String type = getString(current, "type", error);
+    final String type = getString(distribution, "type", error);
 
     DiscreteBound bound = null;
     if (distribution.has("range")) {
-      bound =
-          getDiscreteBound(distribution, "range", ERROR_DISCRETE_DISTRIBUTIONS_NAME + name + ". ");
+      bound = getDiscreteBound(distribution, "range", ERROR_DISCRETE_DISTRIBUTIONS_NAME + name + ". ");
     }
 
     final JsonObject parameters = distribution.get("parameters").getAsJsonObject();
@@ -153,9 +145,7 @@ public class ConfigParser {
         final int n = parameters.get("n").getAsInt();
         final double p = parameters.get("p").getAsDouble();
 
-        dist =
-            wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p),
-                bound);
+        dist = wrapDiscreteDistribution(new BinomialDistribution(RandomProvider.getGenerator(), n, p), bound);
         break;
       }
       case "enumerated": {
@@ -164,17 +154,13 @@ public class ConfigParser {
 
         final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
 
-        dist =
-            wrapDiscreteDistribution(
-                new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
+        dist = wrapDiscreteDistribution(new EnumeratedIntegerDistribution(RandomProvider.getGenerator(), v, p), bound);
         break;
       }
       case "geometric": {
 
         final double p = parameters.get("p").getAsDouble();
-        dist =
-            wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p),
-                bound);
+        dist = wrapDiscreteDistribution(new GeometricDistribution(RandomProvider.getGenerator(), p), bound);
         break;
       }
       case "poisson": {
@@ -182,8 +168,7 @@ public class ConfigParser {
         final double lambda = parameters.get("lambda").getAsDouble();
         dist =
             wrapDiscreteDistribution(new PoissonDistribution(RandomProvider.getGenerator(), lambda,
-                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS),
-                bound);
+                PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS), bound);
         break;
       }
       case "uniform": {
@@ -191,8 +176,7 @@ public class ConfigParser {
         final int lower = parameters.get("lower").getAsInt();
         final int upper = parameters.get("upper").getAsInt();
         dist =
-            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(),
-                lower, upper), bound);
+            wrapDiscreteDistribution(new UniformIntegerDistribution(RandomProvider.getGenerator(), lower, upper), bound);
         break;
       }
       default: {
@@ -202,10 +186,10 @@ public class ConfigParser {
     discreteDistributions.put(name, dist);
   }
 
-  private void putRealDistribution(final JsonObject current, String error) {
+  private void putRealDistribution(final JsonObject current, final String error) {
     final String name = getString(current, "name", error);
     final JsonObject distribution = getJsonObject(current, "distribution", error);
-    final String type = getString(current, "type", error);
+    final String type = getString(distribution, "type", error);
 
     RealBound bound = null;
     if (distribution.has("range")) {
@@ -219,16 +203,13 @@ public class ConfigParser {
         final int a = parameters.get("a").getAsInt();
         final double d = parameters.get("d").getAsDouble();
 
-        dist =
-            wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
+        dist = wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);
         break;
       }
       case "exponential": {
         final double lambda = parameters.get("lambda").getAsDouble();
 
-        dist =
-            wrapRealDistribution(
-                new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
+        dist = wrapRealDistribution(new ExponentialDistribution(RandomProvider.getGenerator(), lambda), bound);
 
         break;
       }
@@ -238,18 +219,14 @@ public class ConfigParser {
 
         final double[] p = getDoubleArray(parameters.get("p").getAsJsonArray());
 
-        dist =
-            wrapRealDistribution(
-                new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
+        dist = wrapRealDistribution(new EnumeratedRealDistribution(RandomProvider.getGenerator(), v, p), bound);
         break;
       }
       case "uniform": {
 
         final double lower = parameters.get("lower").getAsDouble();
         final double upper = parameters.get("upper").getAsDouble();
-        dist =
-            wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower,
-                upper), bound);
+        dist = wrapRealDistribution(new UniformRealDistribution(RandomProvider.getGenerator(), lower, upper), bound);
         break;
       }
       default: {
@@ -275,8 +252,8 @@ public class ConfigParser {
     return array;
   }
 
-  private static IntegerDistribution wrapDiscreteDistribution(
-      final AbstractIntegerDistribution distribution, final DiscreteBound bound) {
+  private static IntegerDistribution wrapDiscreteDistribution(final AbstractIntegerDistribution distribution,
+      final DiscreteBound bound) {
     if (bound == null) {
       return distribution;
     }
@@ -291,8 +268,7 @@ public class ConfigParser {
     return new RealDistributionLimiter(distribution, bound.getLeftBound(), bound.getRightBound());
   }
 
-  private static JsonElement getElement(final JsonObject object, final String name,
-      final String error) {
+  private static JsonElement getElement(final JsonObject object, final String name, final String error) {
     if (!object.has(name)) {
       throw new ParseException(error + " Element '" + name + "' doesn't exist.");
     }
@@ -330,32 +306,27 @@ public class ConfigParser {
     }
   }
 
-  private static JsonObject getJsonObject(final JsonObject object, final String name,
-      final String error) {
+  private static JsonObject getJsonObject(final JsonObject object, final String name, final String error) {
     final JsonElement element = getElement(object, name, error);
 
     try {
       return element.getAsJsonObject();
     } catch (ClassCastException | IllegalStateException exception) {
-      throw new ParseException(error + " Element '" + name + "' is not a valid Json object.",
-          exception);
+      throw new ParseException(error + " Element '" + name + "' is not a valid Json object.", exception);
     }
   }
 
-  private static JsonArray getJsonArray(final JsonObject object, final String name,
-      final String error) {
+  private static JsonArray getJsonArray(final JsonObject object, final String name, final String error) {
     final JsonElement element = getElement(object, name, error);
 
     try {
       return element.getAsJsonArray();
     } catch (ClassCastException | IllegalStateException exception) {
-      throw new ParseException(error + " Element '" + name + "' is not a valid Json array.",
-          exception);
+      throw new ParseException(error + " Element '" + name + "' is not a valid Json array.", exception);
     }
   }
 
-  private static DiscreteBound getDiscreteBound(final JsonObject object, final String name,
-      String error) {
+  private static DiscreteBound getDiscreteBound(final JsonObject object, final String name, final String error) {
     final JsonArray array = getJsonArray(object, name, error);
     if (array.size() != 2) {
       throw new ParseException(error + "Expected two integers, got " + array.size() + ". ");
@@ -371,7 +342,7 @@ public class ConfigParser {
     return bound;
   }
 
-  private static RealBound getRealBound(final JsonObject object, final String name, String error) {
+  private static RealBound getRealBound(final JsonObject object, final String name, final String error) {
     final JsonArray array = getJsonArray(object, name, error);
     if (array.size() != 2) {
       throw new ParseException(error + "Expected two doubles, got " + array.size() + ". ");
@@ -409,7 +380,7 @@ public class ConfigParser {
 
     private final int rightBound;
 
-    public DiscreteBound(int leftBound, int rightBound) {
+    public DiscreteBound(final int leftBound, final int rightBound) {
       super();
       this.leftBound = leftBound;
       this.rightBound = rightBound;
@@ -430,7 +401,7 @@ public class ConfigParser {
 
     private final double rightBound;
 
-    public RealBound(double leftBound, double rightBound) {
+    public RealBound(final double leftBound, final double rightBound) {
       super();
       this.leftBound = leftBound;
       this.rightBound = rightBound;

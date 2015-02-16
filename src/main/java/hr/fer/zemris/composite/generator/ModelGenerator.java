@@ -152,7 +152,7 @@ public class ModelGenerator {
       output.addParent(parent);
     }
 
-    for (int i = nodes.size(); i >= 0; i--) {
+    for (int i = nodes.size() - 1; i >= 0; i--) {
       final AbstractNode node = nodes.get(i);
       if (node.getChildren().isEmpty()) {
         node.clearParents();
@@ -262,7 +262,7 @@ public class ModelGenerator {
     int index = 0;
 
     for (final AbstractNode parent : levelEdges.keySet()) {
-      for (int i = levelEdges.get(parent); i >= 0; i--) {
+      for (int i = levelEdges.get(parent) - 1; i >= 0; i--) {
         choosed.get(index).addParent(parent);
         index++;
       }
@@ -287,7 +287,7 @@ public class ModelGenerator {
   private void createEdges(final List<AbstractNode> nodes, final int currentLevel, final int levelCount,
       final List<Map<AbstractNode, Integer>> edges) {
     final IntegerDistribution targetLevelDistribution =
-        new IntegerDistributionLimiter(discreteDistributions.get("targetLevel"), 1, levelCount - currentLevel);
+        new IntegerDistributionLimiter(discreteDistributions.get("targetLevel"), 1, levelCount - currentLevel - 1);
 
     for (final AbstractNode node : nodes) {
       // 4

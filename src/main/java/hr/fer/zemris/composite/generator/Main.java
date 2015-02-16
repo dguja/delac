@@ -6,22 +6,31 @@ import hr.fer.zemris.composite.generator.exception.ParseException;
 import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.DirectionType;
 import hr.fer.zemris.composite.generator.model.Model;
+import hr.fer.zemris.composite.generator.random.RandomProvider;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Main {
 
   private static String CONFIG_FILE = "conf.json";
 
+  private static String OUTPUT_FILE = "other/graph.dot";
+
   public static void main(final String[] args) throws IOException {
+    final long millis = 1424101038410l;
+    RandomProvider.getRandom().setSeed(millis);
+
     final ConfigParser parser = new ConfigParser();
 
     try (final InputStream inputStream = new FileInputStream(CONFIG_FILE)) {
       parser.parse(inputStream);
     } catch (final ParseException exception) {
-      exit(exception.getMessage());
+      exception.printStackTrace();
+      exit("");
     }
 
     final ModelGenerator generator =
@@ -38,7 +47,7 @@ public class Main {
     final Model model = dataset.getModels().get(0);
     model.getOutput().calculateReliability(DirectionType.PARENT);
 
-    System.out.println(DotUtilities.toDot(model, "test"));
+    Files.write(Paths.get(OUTPUT_FILE), DotUtilities.toDot(model, "test").getBytes());
   }
 
   private static void exit(final String message) {

@@ -98,6 +98,16 @@
 			}
 		},
 		{
+			"name": "childCount_0",
+			"distribution": {
+				"type": "geometric",
+				"range": [1, 10],
+				"parameters": {
+					"p" : 0.5
+				}
+			}
+		},
+		{
 			"name": "childCount_1",
 			"distribution": {
 				"type": "geometric",

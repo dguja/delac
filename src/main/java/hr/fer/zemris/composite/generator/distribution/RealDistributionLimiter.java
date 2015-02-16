@@ -1,5 +1,7 @@
 package hr.fer.zemris.composite.generator.distribution;
 
+import hr.fer.zemris.composite.generator.random.RandomProvider;
+
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
@@ -25,7 +27,7 @@ public class RealDistributionLimiter extends AbstractRealDistribution {
   private final double leftSum;
 
   public RealDistributionLimiter(final RealDistribution distribution, final double leftBound, final double rightBound) {
-    super(null);
+    super(RandomProvider.getGenerator());
 
     if (leftBound > rightBound) {
       throw new IllegalArgumentException("Left bound is greater than right.");
