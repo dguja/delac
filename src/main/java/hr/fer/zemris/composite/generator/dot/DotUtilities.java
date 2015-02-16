@@ -2,6 +2,7 @@ package hr.fer.zemris.composite.generator.dot;
 
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.Model;
+import hr.fer.zemris.composite.generator.model.nodes.BranchNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,8 +32,16 @@ public class DotUtilities {
     for (final AbstractNode node : visited) {
       levels.get(node.getLevel()).add(node);
 
-      for (final AbstractNode parent : node.getParents()) {
-        builder.append(node.getId()).append(" -> ").append(parent.getId()).append(";\n");
+      int parentSize = node.getParents().size();
+      for (int i = 0; i < parentSize; ++i) {
+        final AbstractNode parent = node.getParents().get(i);
+        builder.append(node.getId()).append(" -> ").append(parent.getId());
+        
+        if (node instanceof BranchNode) {
+          builder.append(" [label=\"" + ((BranchNode)node).getProbabilities().get(i) + "\"]");
+        }
+        
+        builder.append(";\n");
       }
     }
 
