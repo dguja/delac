@@ -10,6 +10,7 @@ generatorBehaviorLesser (integer [1, 3]) - controls generator behavior when L < 
 generatorBehaviorGreater (integer [1, 2]) - controls generator behavior when L > P (number of nodes greater than number of connections)
 targetLevel (integer [1, inf>) - level at wich node's edge will be connected (relative to node's level)
 nodeType (integer [1, 4]) - type of created inner node
+childCount_x (integer [1, inf>) - number of children for node type 'x'
 
 Node parameters
 

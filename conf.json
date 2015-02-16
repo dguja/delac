@@ -1,59 +1,146 @@
 {
-	"modelCount": 10,
+	"modelCount": 1,
 	"copyInputs": false,
 	"discreteDistributions": [
 		{
-			"name": "d1",
+			"name": "inputNodeCount",
 			"distribution": {
 				"type": "binomial",
+				"range": [1, 10],
 				"parameters": {
-					"n" : 50,
+					"n" : 10,
 					"p" : 0.5
 				}
 			}
 		},
 		{
-			"name": "enumerated",
+			"name": "usedInputCount",
+			"distribution": {
+				"type": "binomial",
+				"range": [1, 10],
+				"parameters": {
+					"n" : 10,
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "levelCount",
+			"distribution": {
+				"type": "binomial",
+				"range": [2, 10],
+				"parameters": {
+					"n" : 10,
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "levelNodeCount",
+			"distribution": {
+				"type": "binomial",
+				"range": [1, 10],
+				"parameters": {
+					"n" : 5,
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "generatorBehaviorLesser",
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v" : [50, 10],
-					"p" : [0.8, 0.3]
+					"v" : [1, 2, 3],
+					"p" : [1.0, 0.0, 0.0]
 				}
 			}
 		},
 		{
-			"name": "geometric",
+			"name": "generatorBehaviorGreater",
+			"distribution": {
+				"type": "enumerated",
+				"parameters": {
+					"v" : [1, 2],
+					"p" : [1.0, 0.0]
+				}
+			}
+		},
+		{
+			"name": "targetLevel",
 			"distribution": {
 				"type": "geometric",
+				"range": [1, 10],
+				"parameters": {
+					"p" : 0.7
+				}
+			}
+		},
+		{
+			"name": "nodeType",
+			"distribution": {
+				"type": "enumerated",
+				"parameters": {
+					"v" : [1, 2, 3, 4],
+					"p" : [0.15, 0.6, 0.15, 0.1]
+				}
+			}
+		},
+		{
+			"name": "parallelParameter",
+			"distribution": {
+				"type": "binomial",
+				"range": [1, 10],
+				"parameters": {
+					"n" : 5,
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "childCount_1",
+			"distribution": {
+				"type": "geometric",
+				"range": [1, 10],
 				"parameters": {
 					"p" : 0.5
 				}
 			}
 		},
 		{
-			"name": "poisson",
+			"name": "childCount_2",
 			"distribution": {
-				"type": "poisson",
+				"type": "geometric",
+				"range": [1, 10],
 				"parameters": {
-					"lambda" : 0.5
+					"p" : 0.5
 				}
 			}
 		},
 		{
-			"name": "uniform",
+			"name": "childCount_3",
 			"distribution": {
-				"type": "uniform",
+				"type": "geometric",
+				"range": [1, 10],
 				"parameters": {
-					"lower" : 0,
-					"upper" : 10
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "childCount_4",
+			"distribution": {
+				"type": "geometric",
+				"range": [1, 10],
+				"parameters": {
+					"p" : 0.5
 				}
 			}
 		}
 	],
 	"realDistributions": [
 		{
-			"name": "p1",
+			"name": "initialReliability",
 			"distribution": {
 				"type": "normal",
 				"range": [0, 1],
@@ -64,32 +151,24 @@
 			}
 		},
 		{
-			"name": "expo",
-			"distribution": {
-				"type": "exponential",
-				"range": [0, 1],
-				"parameters": {
-					"lambda" : 0.5
-				}
-			}
-		},
-		{
-			"name": "enumerated",
+			"name": "nodeWeight",
 			"distribution": {
 				"type": "enumerated",
+				"range": [0, 1],
 				"parameters": {
-					"v" : [50.4, 10],
-					"p" : [0.8, 0.3]
+					"v" : [0.0],
+					"p" : [1.0]
 				}
 			}
 		},
 		{
-			"name": "uniform",
+			"name": "branchProbability",
 			"distribution": {
-				"type": "uniform",
+				"type": "normal",
+				"range": [0, 1],
 				"parameters": {
-					"lower" : 0,
-					"upper" : 10
+					"a" : 0.5,
+					"d" : 1
 				}
 			}
 		}
