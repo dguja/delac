@@ -1,6 +1,8 @@
 #!/bin/bash
 
-java -cp ../target/classes/ hr.fer.zemris.composite.generator.Main > graph.dot
-dot graph.dot -Tpng > graph.png
+rm -f graph.dot graph.img
+
+java -cp ../target/classes/ hr.fer.zemris.composite.generator.Main > graph.dot &&
+dot graph.dot -Tpng > graph.png &&
 xdg-open graph.png
 
