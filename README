@@ -18,3 +18,4 @@ initialReliability (real [0, 1]) - initial reliability of input nodes
 nodeWeight (real [0, 1]) - node weight
 branchProbability (real [0, 1]) - probability of each branch in branch node
 parallelParameter (integer [1, inf>) - k parameter of parallel node
+repetitionCount (integer [1, inf>) - number of repetitions in a loop node

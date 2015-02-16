@@ -2,7 +2,6 @@ package hr.fer.zemris.composite.generator.dot;
 
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.Model;
-import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,18 +11,20 @@ import java.util.Set;
 public class DotUtilities {
 
   public static String toDot(final Model model, final String graphName) {
-    final OutputNode outputNode = model.getOutput();
-
     final Set<AbstractNode> visited = new HashSet<>();
-    getNodes(outputNode, visited);
+
+    for (final AbstractNode input : model.getInputs()) {
+      getNodes(input, visited);
+    }
 
     final StringBuilder builder = new StringBuilder();
 
-    builder.append("digraph ").append(graphName).append(" {\n");
+    builder.append("digraph ").append(graphName).append(" {\nclusterrank=local;\n");
 
     final List<List<AbstractNode>> levels = new ArrayList<>();
 
-    for (int i = 0; i <= outputNode.getLevel(); i++) {
+    final int levelCount = model.getOutput().getLevel();
+    for (int i = 0; i <= levelCount; i++) {
       levels.add(new ArrayList<AbstractNode>());
     }
 
@@ -38,14 +39,20 @@ public class DotUtilities {
     builder.append("\n");
 
     for (int i = 0; i < levels.size(); i++) {
-      builder.append("subgraph level_" + i + " {\nrank=same;\n");
+      final List<AbstractNode> level = levels.get(i);
+      final int levelSize = level.size();
 
-      for (final AbstractNode node : levels.get(i)) {
-        builder.append(node.getId() + " [label=\"" + node.getType().toString().toLowerCase() + "\\n"
-            + String.format("%.3f", node.getReliability()) + "\"]" + "\n");
+      if (levelSize == 0) {
+        continue;
       }
 
-      builder.append(";\n}\n");
+      builder.append("subgraph cluster_" + i + " {\nrank=same;\n");
+
+      for (final AbstractNode node : level) {
+        builder.append(node.getId() + " [label=\"" + node.getLabel() + "\"];" + "\n");
+      }
+
+      builder.append("color=blue;\nlabel=\"level " + i + "\"\n}\n");
     }
 
     builder.append("}");
@@ -60,8 +67,8 @@ public class DotUtilities {
 
     visited.add(node);
 
-    for (final AbstractNode parent : node.getParents()) {
-      getNodes(parent, visited);
+    for (final AbstractNode child : node.getChildren()) {
+      getNodes(child, visited);
     }
   }
 

@@ -1,6 +1,6 @@
 {
-	"modelCount": 1,
-	"copyInputs": false,
+	"modelCount": 10,
+	"copyInputs": true,
 	"discreteDistributions": [
 		{
 			"name": "inputNodeCount",
@@ -41,7 +41,7 @@
 				"type": "binomial",
 				"range": [1, 10],
 				"parameters": {
-					"n" : 5,
+					"n" : 10,
 					"p" : 0.5
 				}
 			}
@@ -52,7 +52,7 @@
 				"type": "enumerated",
 				"parameters": {
 					"v" : [1, 2, 3],
-					"p" : [1.0, 0.0, 0.0]
+					"p" : [0.0, 1.0, 0.0]
 				}
 			}
 		},
@@ -72,7 +72,7 @@
 				"type": "geometric",
 				"range": [1, 10],
 				"parameters": {
-					"p" : 0.7
+					"p" : 0.2
 				}
 			}
 		},
@@ -139,6 +139,16 @@
 		},
 		{
 			"name": "childCount_4",
+			"distribution": {
+				"type": "geometric",
+				"range": [1, 10],
+				"parameters": {
+					"p" : 0.5
+				}
+			}
+		},
+		{
+			"name": "repetitionCount",
 			"distribution": {
 				"type": "geometric",
 				"range": [1, 10],

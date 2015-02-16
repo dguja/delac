@@ -18,10 +18,12 @@ public class Main {
 
   private static String CONFIG_FILE = "conf.json";
 
-  private static String OUTPUT_FILE = "other/graph.dot";
+  private static String OUTPUT_FILE_FORMAT = "other/output/graph%d.dot";
 
   public static void main(final String[] args) throws IOException {
-    final long millis = 1424101038410l;
+    final long millis = 1424108553902l; // System.currentTimeMillis();
+
+    System.err.println(millis);
     RandomProvider.getRandom().setSeed(millis);
 
     final ConfigParser parser = new ConfigParser();
@@ -44,10 +46,13 @@ public class Main {
       exit(exception.getMessage());
     }
 
-    final Model model = dataset.getModels().get(0);
-    model.getOutput().calculateReliability(DirectionType.PARENT);
+    for (int i = 0; i < dataset.getModels().size(); i++) {
+      final Model model = dataset.getModels().get(i);
+      model.getOutput().calculateReliability(DirectionType.PARENT);
 
-    Files.write(Paths.get(OUTPUT_FILE), DotUtilities.toDot(model, "test").getBytes());
+      final String filename = String.format(OUTPUT_FILE_FORMAT, i);
+      Files.write(Paths.get(filename), DotUtilities.toDot(model, "test").getBytes());
+    }
   }
 
   private static void exit(final String message) {

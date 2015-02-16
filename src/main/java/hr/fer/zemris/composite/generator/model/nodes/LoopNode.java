@@ -16,18 +16,16 @@ public class LoopNode extends AbstractNode {
    */
   private static final long serialVersionUID = 2416008536138769590L;
 
-  private int numRepetitions;
+  private final int numRepetitions;
 
-  public LoopNode(final long id, final int level) {
+  public LoopNode(final long id, final int level, final int numRepetitions) {
     super(id, level);
+
+    this.numRepetitions = numRepetitions;
   }
 
   public int getNumRepetitions() {
     return numRepetitions;
-  }
-
-  public void setNumRepetitions(final int numRepetitions) {
-    this.numRepetitions = numRepetitions;
   }
 
   @Override
@@ -43,6 +41,11 @@ public class LoopNode extends AbstractNode {
   @Override
   public NodeType getType() {
     return NodeType.LOOP;
+  }
+
+  @Override
+  protected String getParameterText() {
+    return Integer.toString(numRepetitions);
   }
 
 }

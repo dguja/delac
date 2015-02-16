@@ -1,7 +1,13 @@
 #!/bin/bash
 
-rm -f graph.png 
+rm -f output/graph*.png
 
-dot graph.dot -Tpng > graph.png &&
-xdg-open graph.png
+for name in $(ls output/graph*.dot); do
+	output=$(echo $name | sed -re s/\\.dot\$/.png/)
+	
+	echo "$name -> $output"
+	
+	rm -f $output
+	dot $name -Tpng > $output
+done
 
