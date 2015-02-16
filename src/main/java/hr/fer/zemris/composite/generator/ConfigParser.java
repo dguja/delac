@@ -27,7 +27,9 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 /**
@@ -85,9 +87,14 @@ public class ConfigParser {
    */
   public void parse(final InputStream inputStream) {
     final JsonParser parser = new JsonParser();
-
-    final JsonObject root =
-        parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).getAsJsonObject();
+    JsonObject root = null;
+    try {
+      root =
+          parser.parse(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+              .getAsJsonObject();
+    } catch (JsonParseException | IllegalStateException ex) {
+      throw new ParseException("Not valid JSON file.");
+    }
 
     modelCount = getInt(root, "modelCount", ERROR_ROOT_PARAMETER);
 
