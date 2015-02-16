@@ -5,6 +5,7 @@ import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.NodeType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -32,6 +33,10 @@ public class BranchNode extends AbstractNode {
     super(id, level);
 
     this.probabilityDistribution = probabilityDistribution;
+  }
+
+  public List<Double> getProbabilities() {
+    return Collections.unmodifiableList(probabilities);
   }
 
   @Override
