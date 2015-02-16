@@ -35,8 +35,14 @@ public class BranchNode extends AbstractNode {
     this.probabilityDistribution = probabilityDistribution;
   }
 
-  public List<Double> getProbabilities() {
-    return Collections.unmodifiableList(probabilities);
+  public List<Double> getNormalizedProbabilities() {
+    List<Double> normalizedProbabilities = new ArrayList<>();
+    
+    for (Double probability : probabilities) {
+      normalizedProbabilities.add(probability/probabilitySum);
+    }
+    
+    return normalizedProbabilities;
   }
 
   @Override
@@ -68,6 +74,7 @@ public class BranchNode extends AbstractNode {
     final int numParents = parents.size();
     final int numCombinations = 1 << numParents;
 
+    List<Double> normalizedProbabilites = getNormalizedProbabilities();
     reliability = 0.0;
     for (int mask = 0; mask < numCombinations; ++mask) {
       double falseProbability = 0;
@@ -77,7 +84,7 @@ public class BranchNode extends AbstractNode {
         final double parentReliability = parents.get(i).getReliability();
 
         if ((mask & (1 << i)) == 0) {
-          falseProbability += probabilities.get(i) / probabilitySum;
+          falseProbability += normalizedProbabilites.get(i);
           combReliability *= (1 - parentReliability);
         } else {
           combReliability *= parentReliability;

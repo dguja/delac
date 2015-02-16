@@ -38,7 +38,7 @@ public class DotUtilities {
         builder.append(node.getId()).append(" -> ").append(parent.getId());
         
         if (node instanceof BranchNode) {
-          builder.append(" [label=\"" + ((BranchNode)node).getProbabilities().get(i) + "\"]");
+          builder.append(" [label=\"" + String.format("%.3f", ((BranchNode)node).getNormalizedProbabilities().get(i)) + "\"]");
         }
         
         builder.append(";\n");
