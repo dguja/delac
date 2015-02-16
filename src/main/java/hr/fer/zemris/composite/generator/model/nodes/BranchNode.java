@@ -1,5 +1,6 @@
 package hr.fer.zemris.composite.generator.model.nodes;
 
+import hr.fer.zemris.composite.generator.exception.GeneratorException;
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.NodeType;
 
@@ -38,6 +39,10 @@ public class BranchNode extends AbstractNode {
     super.addParent(parent);
 
     final double probability = probabilityDistribution.sample();
+    if (probability < 0 || probability > 1) {
+      throw new GeneratorException("'branchProbability' distribution returned a value outside [0, 1]: " + probability
+          + ".");
+    }
 
     probabilities.add(probability);
     probabilitySum += probability;

@@ -53,10 +53,20 @@ public class ModelGenerator {
 
     // 1
     final int inputNodeCount = discreteDistributions.get("inputNodeCount").sample();
+    if (inputNodeCount < 1) {
+      throw new GeneratorException("'inputNodeCount' distribution returned a value lesser than 1: " + inputNodeCount
+          + ".");
+    }
 
     final List<InputNode> inputs = new ArrayList<>();
     for (int i = 0; i < inputNodeCount; i++) {
-      inputs.add(new InputNode(nextId(), realDistributions.get("initialReliability").sample()));
+      final double initialReliability = realDistributions.get("initialReliability").sample();
+      if (initialReliability < 0 || initialReliability > 1) {
+        throw new GeneratorException("'initialReliability' distribution returned a value outside [0, 1]: "
+            + inputNodeCount + ".");
+      }
+
+      inputs.add(new InputNode(nextId(), initialReliability));
     }
 
     final IntegerDistribution usedInputCountDistribution =
@@ -72,11 +82,15 @@ public class ModelGenerator {
 
   private Model
       generateModel(final List<InputNode> datasetInputs, final IntegerDistribution usedInputCountDistribution) {
-    // TODO test levelNumber distribution
-    // TODO test levelNodeCount distribution
 
     // 2
-    final List<InputNode> originalInputs = RandomUtilities.choose(datasetInputs, usedInputCountDistribution.sample());
+    final int usedInputCount = usedInputCountDistribution.sample();
+    if (usedInputCount < 1) {
+      throw new GeneratorException("'usedInputCount' distribution returned a value lesser than 1: " + usedInputCount
+          + ".");
+    }
+
+    final List<InputNode> originalInputs = RandomUtilities.choose(datasetInputs, usedInputCount);
 
     final List<InputNode> inputs = new ArrayList<>();
     for (int i = 0; i < originalInputs.size(); i++) {
@@ -85,6 +99,9 @@ public class ModelGenerator {
 
     // 3
     final int levelCount = discreteDistributions.get("levelCount").sample();
+    if (levelCount < 2) {
+      throw new GeneratorException("'levelCount' distribution returned a value lesser than 2: " + levelCount + ".");
+    }
 
     final List<Map<AbstractNode, Integer>> edges = new ArrayList<>();
     for (int i = 0; i < levelCount; i++) {
@@ -100,7 +117,14 @@ public class ModelGenerator {
       } else {
         // 6
         final List<AbstractNode> previousLevelNodes = levelNodes;
-        levelNodes = createNodes(discreteDistributions.get("levelNodeCount").sample(), i);
+
+        final int levelNodeCount = discreteDistributions.get("levelNodeCount").sample();
+        if (levelNodeCount < 1) {
+          throw new GeneratorException("'levelNodeCount' distribution returned a value lesser than 1: "
+              + levelNodeCount + ".");
+        }
+
+        levelNodes = createNodes(levelNodeCount, i);
 
         // 7
         connectNodes(levelNodes, i, levelCount, edges.get(i), previousLevelNodes);
@@ -191,7 +215,7 @@ public class ModelGenerator {
           break;
 
         default:
-          throw new GeneratorException("'generatorBehaviorLesser' distribution returned invalid value: "
+          throw new GeneratorException("'generatorBehaviorLesser' distribution returned value not in {1, 2, 3}: "
               + generatorBehavior + ".");
       }
     } else {
@@ -216,7 +240,7 @@ public class ModelGenerator {
           break;
 
         default:
-          throw new GeneratorException("'generatorBehaviorGreater' distribution returned invalid value: "
+          throw new GeneratorException("'generatorBehaviorGreater' distribution returned a value not in {1, 2}: "
               + generatorBehavior + ".");
       }
     }
@@ -271,7 +295,13 @@ public class ModelGenerator {
 
       // 5
       for (int j = 0; j < edgeCount; j++) {
-        final int targetLevel = currentLevel + targetLevelDistribution.sample();
+        final int targetLevelRelative = targetLevelDistribution.sample();
+        if (targetLevelRelative < 1) {
+          throw new GeneratorException("'targetLevel' distribution returned a value lesser than 1: "
+              + targetLevelRelative + ".");
+        }
+
+        final int targetLevel = currentLevel + targetLevelRelative;
         addEdge(edges.get(targetLevel), node);
       }
 
@@ -321,7 +351,7 @@ public class ModelGenerator {
         break;
 
       case PARALLEL:
-        node = new ParallelNode(id, level, discreteDistributions.get("paralleParameter"));
+        node = new ParallelNode(id, level, discreteDistributions.get("parallelParameter"));
         break;
 
       case LOOP:
@@ -329,10 +359,15 @@ public class ModelGenerator {
         break;
 
       default:
-        throw new GeneratorException("'nodeType' distribution returned invalid node type: " + nodeType + ".");
+        throw new GeneratorException("'nodeType' distribution returned a value not in {1, 2, 3, 4}: " + nodeType + ".");
     }
 
-    node.setWeight(realDistributions.get("nodeWeight").sample());
+    final double weight = realDistributions.get("nodeWeight").sample();
+    if (weight < 0 || weight > 1) {
+      throw new GeneratorException("'nodeWeight' distribution returned a value outside [0, 1]: " + weight + ".");
+    }
+
+    node.setWeight(weight);
 
     return node;
   }

@@ -1,5 +1,7 @@
 package hr.fer.zemris.composite.generator.model.nodes;
 
+import hr.fer.zemris.composite.generator.distribution.IntegerDistributionLimiter;
+import hr.fer.zemris.composite.generator.exception.GeneratorException;
 import hr.fer.zemris.composite.generator.model.AbstractNode;
 import hr.fer.zemris.composite.generator.model.NodeType;
 
@@ -22,7 +24,7 @@ public class ParallelNode extends AbstractNode {
    * Indicates how many of the n parallel workflow execution paths have to be successfully completed
    * in order for the composition to display fault-free behaviour.
    */
-  private final int k = 0;
+  private int k = 0;
 
   private final IntegerDistribution kDistribution;
 
@@ -59,14 +61,21 @@ public class ParallelNode extends AbstractNode {
 
   @Override
   public boolean addParent(final AbstractNode parent) {
-    // TODO Auto-generated method stub
-    return super.addParent(parent);
+    super.addParent(parent);
+
+    k = new IntegerDistributionLimiter(kDistribution, 0, children.size()).sample();
+    if (k < 1) {
+      throw new GeneratorException("'parallelParameter' distribution returned a value lesser than 1: " + k + ".");
+    }
+
+    return true;
   }
 
   @Override
   public void clearParents() {
-    // TODO Auto-generated method stub
     super.clearParents();
+
+    k = 0;
   }
 
   @Override
