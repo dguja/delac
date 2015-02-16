@@ -60,15 +60,13 @@ public class ParallelNode extends AbstractNode {
   }
 
   @Override
-  public boolean addParent(final AbstractNode parent) {
+  public void addParent(final AbstractNode parent) {
     super.addParent(parent);
 
     k = new IntegerDistributionLimiter(kDistribution, 0, children.size()).sample();
     if (k < 1) {
       throw new GeneratorException("'parallelParameter' distribution returned a value lesser than 1: " + k + ".");
     }
-
-    return true;
   }
 
   @Override

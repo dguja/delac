@@ -6,9 +6,9 @@
 			"name": "inputNodeCount",
 			"distribution": {
 				"type": "binomial",
-				"range": [1, 10],
+				"range": [1, 30],
 				"parameters": {
-					"n" : 10,
+					"n" : 30,
 					"p" : 0.5
 				}
 			}
@@ -17,9 +17,9 @@
 			"name": "usedInputCount",
 			"distribution": {
 				"type": "binomial",
-				"range": [1, 10],
+				"range": [1, 30],
 				"parameters": {
-					"n" : 10,
+					"n" : 30,
 					"p" : 0.5
 				}
 			}
@@ -62,7 +62,7 @@
 				"type": "enumerated",
 				"parameters": {
 					"v" : [1, 2],
-					"p" : [1.0, 0.0]
+					"p" : [0.0, 1.0]
 				}
 			}
 		},

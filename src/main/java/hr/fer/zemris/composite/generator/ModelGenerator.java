@@ -16,6 +16,7 @@ import hr.fer.zemris.composite.generator.random.RandomUtilities;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -176,8 +177,9 @@ public class ModelGenerator {
     if (nodeCount == edgeCount) {
       pairNodes(nodes, levelEdges, nodeCount);
     } else if (nodeCount < edgeCount) {
-      final int generatorBehavior = discreteDistributions.get("generatorBehaviorLesser").sample();
+      final List<AbstractNode> parents = linearizeEdges(levelEdges);
 
+      final int generatorBehavior = discreteDistributions.get("generatorBehaviorLesser").sample();
       switch (generatorBehavior) {
         case 1:
           nodes.addAll(createNodes(edgeCount - nodeCount, currentLevel));
@@ -186,37 +188,51 @@ public class ModelGenerator {
           break;
 
         case 2:
-          final Set<AbstractNode> connectedChildren = new HashSet<>();
-
-          System.err.println("Level: " + currentLevel);
-
-          for (final AbstractNode parent : levelEdges.keySet()) {
-            final int choosedEdges = RandomUtilities.getRandomInt(levelEdges.get(parent));
-            System.err.print(choosedEdges + " ");
-
-            final List<AbstractNode> choosedChildren = RandomUtilities.choose(nodes, choosedEdges);
-
-            connectedChildren.addAll(choosedChildren);
-            for (int i = 0; i < choosedEdges; i++) {
-              choosedChildren.get(i).addParent(parent);
+          final List<AbstractNode> loops = new ArrayList<>();
+          for (final AbstractNode node : nodes) {
+            if (node.getType() == NodeType.LOOP) {
+              loops.add(node);
             }
           }
 
-          System.err.println();
+          final List<AbstractNode> loopParents = RandomUtilities.choose(parents, loops.size());
+          for (int i = 0; i < loops.size(); i++) {
+            loops.get(i).addParent(loopParents.get(i));
+          }
 
-          setAll(nodes, connectedChildren);
+          for (final AbstractNode node : loopParents) {
+            parents.remove(parents.indexOf(node));
+          }
+
+          final List<AbstractNode> otherNodes = new ArrayList<>(nodes);
+          otherNodes.removeAll(loops);
+
+          List<Integer> indices = new ArrayList<>();
+          for (int i = 0; i < parents.size() - 1; i++) {
+            indices.add(i);
+          }
+
+          indices = RandomUtilities.choose(indices, otherNodes.size() - 1);
+
+          indices.add(-1);
+          Collections.sort(indices);
+          indices.add(parents.size() - 1);
+
+          for (int i = 0; i < otherNodes.size(); i++) {
+            final Set<AbstractNode> currentParents = new HashSet<>();
+
+            for (int j = indices.get(i) + 1; j <= indices.get(i + 1); j++) {
+              currentParents.add(parents.get(j));
+            }
+
+            for (final AbstractNode parent : currentParents) {
+              otherNodes.get(i).addParent(parent);
+            }
+          }
 
           break;
 
         case 3:
-          final List<AbstractNode> parents = new ArrayList<>();
-
-          for (final Map.Entry<AbstractNode, Integer> entry : levelEdges.entrySet()) {
-            for (int i = entry.getValue(); i >= 0; i--) {
-              parents.add(entry.getKey());
-            }
-          }
-
           final List<AbstractNode> choosedParents = RandomUtilities.choose(parents, nodeCount);
           for (int i = 0; i < nodeCount; i++) {
             nodes.get(i).addParent(choosedParents.get(i));
@@ -254,6 +270,17 @@ public class ModelGenerator {
               + generatorBehavior + ".");
       }
     }
+  }
+
+  private List<AbstractNode> linearizeEdges(final Map<AbstractNode, Integer> levelEdges) {
+    final List<AbstractNode> parents = new ArrayList<>();
+
+    for (final Map.Entry<AbstractNode, Integer> entry : levelEdges.entrySet()) {
+      for (int i = entry.getValue() - 1; i >= 0; i--) {
+        parents.add(entry.getKey());
+      }
+    }
+    return parents;
   }
 
   /**

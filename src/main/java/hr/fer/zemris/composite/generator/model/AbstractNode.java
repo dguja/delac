@@ -131,17 +131,9 @@ public abstract class AbstractNode implements Serializable {
     return true;
   }
 
-  protected boolean isFull() {
-    return false;
-  }
-
-  public boolean addParent(final AbstractNode parent) {
-    if (isFull()) {
-      return false;
-    }
+  public void addParent(final AbstractNode parent) {
     parents.add(parent);
     parent.addChild(this);
-    return true;
   }
 
   protected void addChild(final AbstractNode child) {
@@ -158,6 +150,10 @@ public abstract class AbstractNode implements Serializable {
 
   private void removeChild(final AbstractNode child) {
     children.remove(child);
+  }
+
+  public boolean hasSingleParent() {
+    return false;
   }
 
   public void reset() {

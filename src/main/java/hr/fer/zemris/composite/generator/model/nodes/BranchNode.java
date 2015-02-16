@@ -45,7 +45,7 @@ public class BranchNode extends AbstractNode {
   }
 
   @Override
-  public boolean addParent(final AbstractNode parent) {
+  public void addParent(final AbstractNode parent) {
     super.addParent(parent);
 
     final double probability = probabilityDistribution.sample();
@@ -56,8 +56,6 @@ public class BranchNode extends AbstractNode {
 
     probabilities.add(probability);
     probabilitySum += probability;
-
-    return true;
   }
 
   @Override
