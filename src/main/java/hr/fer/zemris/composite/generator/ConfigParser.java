@@ -200,7 +200,7 @@ public class ConfigParser {
     RealDistribution dist = null;
     switch (type) {
       case "normal": {
-        final int a = parameters.get("a").getAsInt();
+        final double a = parameters.get("a").getAsDouble();
         final double d = parameters.get("d").getAsDouble();
 
         dist = wrapRealDistribution(new NormalDistribution(RandomProvider.getGenerator(), a, d), bound);

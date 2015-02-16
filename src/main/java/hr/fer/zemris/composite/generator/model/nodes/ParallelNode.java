@@ -63,7 +63,7 @@ public class ParallelNode extends AbstractNode {
   public void addParent(final AbstractNode parent) {
     super.addParent(parent);
 
-    k = new IntegerDistributionLimiter(kDistribution, 0, children.size()).sample();
+    k = new IntegerDistributionLimiter(kDistribution, 0, parents.size()).sample();
     if (k < 1) {
       throw new GeneratorException("'parallelParameter' distribution returned a value lesser than 1: " + k + ".");
     }
