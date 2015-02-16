@@ -73,6 +73,9 @@ public abstract class AbstractNode implements Serializable {
 
       @Override
       public int compare(final AbstractNode node1, final AbstractNode node2) {
+        if (Integer.compare(node1.getLevel(), node2.getLevel()) == 0) {
+          return Long.compare(node1.getId(), node2.getId());
+        }
         return Integer.compare(node1.getLevel(), node2.getLevel());
       }
 
@@ -156,9 +159,9 @@ public abstract class AbstractNode implements Serializable {
   private void removeChild(final AbstractNode child) {
     children.remove(child);
   }
-  
+
   public void reset() {
-	  // TODO
+    // TODO
   }
 
   protected abstract void calculateDirectReliability();
