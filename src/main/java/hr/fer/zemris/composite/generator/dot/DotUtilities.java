@@ -1,7 +1,6 @@
 package hr.fer.zemris.composite.generator.dot;
 
 import hr.fer.zemris.composite.generator.model.AbstractNode;
-import hr.fer.zemris.composite.generator.model.DirectionType;
 import hr.fer.zemris.composite.generator.model.Model;
 import hr.fer.zemris.composite.generator.model.nodes.OutputNode;
 
@@ -14,7 +13,6 @@ public class DotUtilities {
 
   public static String toDot(final Model model, final String graphName) {
     final OutputNode outputNode = model.getOutput();
-    outputNode.calculateReliability(DirectionType.PARENT);
 
     final Set<AbstractNode> visited = new HashSet<>();
     getNodes(outputNode, visited);
