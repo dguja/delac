@@ -11,14 +11,20 @@ import hr.fer.zemris.composite.generator.random.RandomProvider;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class Main {
 
   private static String CONFIG_FILE = "conf.json";
 
-  private static String OUTPUT_DOT_FILE_FORMAT = "other/output/graph%d.dot";
+  private static String OUTPUT_FOLDER = "other/output/";
+  
+  private static String OUTPUT_DOT_FILE_FORMAT = OUTPUT_FOLDER + "graph%d.dot";
   
   private static String OUTPUT_PNG_FILE_FORMAT = "output/graph%d.png";
 
@@ -51,6 +57,37 @@ public class Main {
       exit(exception.getMessage());
     }
 
+    // delete old .dot files
+    Path outputFolder = Paths.get(OUTPUT_FOLDER);
+    Files.walkFileTree(outputFolder, new FileVisitor<Path>() {
+
+      @Override
+      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+          throws IOException {
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        if (file.getFileName().toString().endsWith(".dot")){
+          Files.deleteIfExists(file);
+        }
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        return FileVisitResult.CONTINUE;
+      }
+      
+    });
+    
+    
     for (int i = 0; i < dataset.getModels().size(); i++) {
       final Model model = dataset.getModels().get(i);
       model.getOutput().calculateReliability(DirectionType.PARENT);
