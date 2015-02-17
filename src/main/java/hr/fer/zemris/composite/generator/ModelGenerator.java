@@ -207,6 +207,10 @@ public class ModelGenerator {
           final List<AbstractNode> otherNodes = new ArrayList<>(nodes);
           otherNodes.removeAll(loops);
 
+          if (otherNodes.isEmpty()) {
+            break;
+          }
+
           List<Integer> indices = new ArrayList<>();
           for (int i = 0; i < parents.size() - 1; i++) {
             indices.add(i);

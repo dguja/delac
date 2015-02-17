@@ -40,16 +40,13 @@ public class OutputUtilities {
     for (final AbstractNode node : nodes) {
       levels.get(node.getLevel()).add(node);
 
-      int parentSize = node.getParents().size();
+      final int parentSize = node.getParents().size();
       for (int i = 0; i < parentSize; ++i) {
         final AbstractNode parent = node.getParents().get(i);
         String line = node.getId() + " -> " + parent.getId();
 
         if (node instanceof BranchNode) {
-          line +=
-              " [label=\""
-                  + String.format("%.3f", ((BranchNode) node).getNormalizedProbabilities().get(i))
-                  + "\"]";
+          line += " [label=\"" + String.format("%.3f", ((BranchNode) node).getNormalizedProbabilities().get(i)) + "\"]";
         }
 
         line += ";";
@@ -87,8 +84,8 @@ public class OutputUtilities {
     return builder.toString();
   }
 
-  public static String toHtml(int size, String fileFormat) {
-    StringBuilder builder = new StringBuilder();
+  public static String generateHtml(final int size, final String fileFormat) {
+    final StringBuilder builder = new StringBuilder();
     putLine(builder, "<html>");
     incrementIndent();
     putLine(builder, "<head>");
@@ -97,18 +94,18 @@ public class OutputUtilities {
     incrementIndent();
     putLine(builder, "img {");
     incrementIndent();
-    putLine(builder, "margin-top: 50px;");
+    putLine(builder, "margin-top: 100px;");
     decrementIndent();
-    putLine(builder, ";");
+    putLine(builder, "}");
     decrementIndent();
     putLine(builder, "</style>");
     decrementIndent();
     putLine(builder, "</head>");
     putLine(builder, "<body>");
     incrementIndent();
-  
+
     for (int i = 0; i < size; i++) {
-      putLine(builder, "<img src=\""+ String.format(fileFormat, i) +"\"/><br/>");
+      putLine(builder, "<img src=\"" + String.format(fileFormat, i) + "\"/><br/>");
     }
     decrementIndent();
     putLine(builder, "</body>");
@@ -117,12 +114,12 @@ public class OutputUtilities {
     return builder.toString();
   }
 
-  private static void putLine(StringBuilder builder, String line) {
+  private static void putLine(final StringBuilder builder, final String line) {
     putIndent(builder);
     builder.append(line + "\n");
   }
 
-  private static void putIndent(StringBuilder builder) {
+  private static void putIndent(final StringBuilder builder) {
     for (int i = 0; i < indent; ++i) {
       builder.append(' ');
     }
