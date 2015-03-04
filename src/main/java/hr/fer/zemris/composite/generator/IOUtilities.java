@@ -1,15 +1,19 @@
 package hr.fer.zemris.composite.generator;
 
 import hr.fer.zemris.composite.generator.model.AbstractNode;
+import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.Model;
 import hr.fer.zemris.composite.generator.model.nodes.BranchNode;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class OutputUtilities {
+public class IOUtilities {
 
   private static final int INDENT_SIZE = 2;
 
@@ -114,6 +118,15 @@ public class OutputUtilities {
     return builder.toString();
   }
 
+  public static void storeDataset(Dataset dataset, ObjectOutputStream oos) throws IOException {
+	 oos.writeObject(dataset);
+	 oos.flush();
+  }
+  
+  public static Dataset loadDataset(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+	  return (Dataset) ois.readObject();
+  }
+  
   private static void putLine(final StringBuilder builder, final String line) {
     putIndent(builder);
     builder.append(line + "\n");

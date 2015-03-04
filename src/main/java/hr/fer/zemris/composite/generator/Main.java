@@ -67,9 +67,8 @@ public class Main {
 
     System.err.println("Generating HTML output \"" + HTML_FILE + "\"...");
 
-    Files.write(Paths.get(HTML_FILE), OutputUtilities.generateHtml(dataset.getModels().size(), HTML_IMG_FORMAT)
-        .getBytes());
-
+    Files.write(Paths.get(HTML_FILE), IOUtilities.generateHtml(dataset.getModels().size(), HTML_IMG_FORMAT).getBytes());
+    
     System.err.println("Done.");
   }
 
@@ -111,7 +110,7 @@ public class Main {
       final String dotFile = String.format(OUTPUT_DOT_FILE_FORMAT, i);
       final String pngFile = String.format(OUTPUT_PNG_FILE_FORMAT, i);
 
-      Files.write(Paths.get(dotFile), OutputUtilities.toDot(dataset.getModels().get(i), GRAPH_NAME).getBytes());
+      Files.write(Paths.get(dotFile), IOUtilities.toDot(dataset.getModels().get(i), GRAPH_NAME).getBytes());
 
       System.err.println(DOT_NAME + " " + DOT_IMG_TYPE + " " + dotFile + " > " + pngFile);
 
@@ -164,5 +163,5 @@ public class Main {
     System.err.println(message);
     System.exit(1);
   }
-
+  
 }
