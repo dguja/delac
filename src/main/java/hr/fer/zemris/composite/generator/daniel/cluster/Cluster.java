@@ -2,39 +2,39 @@ package hr.fer.zemris.composite.generator.daniel.cluster;
 
 import hr.fer.zemris.composite.generator.daniel.IClusterable;
 
-import java.util.List;
+import java.util.Set;
 
 public class Cluster {
 
-  private List<IClusterable> clusterable;
+  private Set<IClusterable> clusterable;
 
-  private IClusterable center;
+  private IClusterable centroid;
 
-  public Cluster(List<IClusterable> clusterable, IClusterable center) {
+  public Cluster(Set<IClusterable> clusterable, IClusterable centroid) {
     this.clusterable = clusterable;
   }
 
-  public List<IClusterable> getClusterable() {
+  public Set<IClusterable> getClusterable() {
     return clusterable;
   }
 
-  public void setClusterable(List<IClusterable> clusterable) {
+  public void setClusterable(Set<IClusterable> clusterable) {
     this.clusterable = clusterable;
   }
 
-  public IClusterable getCenter() {
-    return center;
+  public IClusterable getCentroid() {
+    return centroid;
   }
 
-  public void setCenter(IClusterable center) {
-    this.center = center;
+  public void setCentroid(IClusterable centroid) {
+    this.centroid = centroid;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((center == null) ? 0 : center.hashCode());
+    result = prime * result + ((centroid == null) ? 0 : centroid.hashCode());
     result = prime * result + ((clusterable == null) ? 0 : clusterable.hashCode());
     return result;
   }
@@ -48,10 +48,10 @@ public class Cluster {
     if (getClass() != obj.getClass())
       return false;
     Cluster other = (Cluster) obj;
-    if (center == null) {
-      if (other.center != null)
+    if (centroid == null) {
+      if (other.centroid != null)
         return false;
-    } else if (!center.equals(other.center))
+    } else if (!centroid.equals(other.centroid))
       return false;
     if (clusterable == null) {
       if (other.clusterable != null)

@@ -31,6 +31,17 @@ public class Vector implements IClusterable {
   }
 
   @Override
+  public IClusterable copy() {
+    double[] copy = new double[values.length];
+
+    for (int i = 0; i < values.length; i++) {
+      copy[i] = values[i];
+    }
+
+    return new Vector(copy);
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
