@@ -12,10 +12,13 @@ public class Dataset implements Serializable {
 
   private List<Model> models;
 
-  public Dataset(final List<Model> models) {
+  private int inputNodeCount;
+  
+  public Dataset(final List<Model> models, int inputNodeCount) {
     super();
 
     this.models = models;
+    this.inputNodeCount = inputNodeCount;
   }
 
   public List<Model> getModels() {
@@ -24,6 +27,10 @@ public class Dataset implements Serializable {
 
   public void setModels(final List<Model> models) {
     this.models = models;
+  }
+  
+  public int getInputNodeCount() {
+    return inputNodeCount;
   }
 
 }

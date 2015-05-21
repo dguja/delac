@@ -78,7 +78,7 @@ public class ModelGenerator {
       models.add(generateModel(inputs, usedInputCountDistribution));
     }
 
-    return new Dataset(models);
+    return new Dataset(models, inputNodeCount);
   }
 
   private Model
