@@ -68,28 +68,14 @@ public class BranchNode extends AbstractNode {
 
   @Override
   protected void calculateDirectReliability() {
-    final int numParents = parents.size();
-    final int numCombinations = 1 << numParents;
-
-    List<Double> normalizedProbabilites = getNormalizedProbabilities();
     reliability = 0.0;
-    for (int mask = 0; mask < numCombinations; ++mask) {
-      double falseProbability = 0;
-      double combReliability = 1.0;
-
-      for (int i = 0; i < numParents; ++i) {
-        final double parentReliability = parents.get(i).getReliability();
-
-        if ((mask & (1 << i)) == 0) {
-          falseProbability += normalizedProbabilites.get(i);
-          combReliability *= (1 - parentReliability);
-        } else {
-          combReliability *= parentReliability;
-        }
-      }
-
-      combReliability *= (1 - falseProbability);
-      reliability += combReliability;
+    final int numParents = parents.size();
+    
+    List<Double> normalizedProbabilites = getNormalizedProbabilities();
+    for (int i = 0; i < numParents; ++i) {
+      final double parentReliability = parents.get(i).getReliability();
+    
+      reliability += normalizedProbabilites.get(i) * parentReliability;
     }
   }
 

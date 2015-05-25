@@ -36,9 +36,10 @@ public class ParallelNode extends AbstractNode {
 
   @Override
   protected void calculateDirectReliability() {
+    reliability = 0.0;
     final int numParents = parents.size();
     final int numCombinations = 1 << numParents;
-
+    
     for (int mask = 0; mask < numCombinations; ++mask) {
       if (Integer.bitCount(mask) < k) {
         continue;
