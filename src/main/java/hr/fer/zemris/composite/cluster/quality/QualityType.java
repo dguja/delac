@@ -12,7 +12,7 @@ public enum QualityType {
     this.qualityMeasure = qualityMeasure;
   }
   
-  public IQualityMeasure getDistanceMeasure() {
+  public IQualityMeasure getQualityMeasure() {
     return qualityMeasure;
   }
 }

@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface IAlgorithm {
 
-  List<ICluster> cluster(List<IClusterable> clusterables, DistanceType distanceType,
-      QualityType qualityType);
+  void setDistanceType(DistanceType distanceType);
+
+  void setQualityType(QualityType qualityType);
+
+  List<ICluster> cluster(List<IClusterable> clusterables);
 }
