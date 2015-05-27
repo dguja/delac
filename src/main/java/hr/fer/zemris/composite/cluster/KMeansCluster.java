@@ -1,16 +1,16 @@
-package hr.fer.zemris.composite.cluster.daniel;
+package hr.fer.zemris.composite.cluster;
 
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 
 import java.util.Set;
 
-public class Cluster {
+public class KMeansCluster {
 
   private Set<IClusterable> clusterable;
 
   private IClusterable centroid;
 
-  public Cluster(Set<IClusterable> clusterable, IClusterable centroid) {
+  public KMeansCluster(Set<IClusterable> clusterable, IClusterable centroid) {
     this.clusterable = clusterable;
   }
 
@@ -47,7 +47,7 @@ public class Cluster {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Cluster other = (Cluster) obj;
+    KMeansCluster other = (KMeansCluster) obj;
     if (centroid == null) {
       if (other.centroid != null)
         return false;
