@@ -1,6 +1,6 @@
-package hr.fer.zemris.cluster.daniel;
+package hr.fer.zemris.composite.cluster.daniel;
 
-import hr.fer.zemris.cluster.IClusterable;
+import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 
 import java.util.Set;
 

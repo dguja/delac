@@ -1,6 +1,4 @@
-package hr.fer.zemris.cluster.daniel;
-
-import hr.fer.zemris.cluster.IClusterable;
+package hr.fer.zemris.composite.cluster.clusterable;
 
 import java.util.Arrays;
 
@@ -18,7 +16,7 @@ public class Vector implements IClusterable {
   }
 
   @Override
-  public double getPoint(int index) {
+  public double getComponent(int index) {
     if (index >= values.length) {
       throw new IndexOutOfBoundsException();
     }

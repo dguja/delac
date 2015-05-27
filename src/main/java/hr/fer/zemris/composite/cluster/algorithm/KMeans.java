@@ -1,9 +1,9 @@
-package hr.fer.zemris.cluster.algorithms;
+package hr.fer.zemris.composite.cluster.algorithm;
 
-import hr.fer.zemris.cluster.IClusterable;
-import hr.fer.zemris.cluster.IDistanceQuality;
-import hr.fer.zemris.cluster.daniel.Cluster;
-import hr.fer.zemris.cluster.daniel.Vector;
+import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
+import hr.fer.zemris.composite.cluster.clusterable.Vector;
+import hr.fer.zemris.composite.cluster.daniel.Cluster;
+import hr.fer.zemris.composite.cluster.distance.IDistanceMeasure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +18,9 @@ public class KMeans {
 
   private List<IClusterable> clusterable;
 
-  private IDistanceQuality distanceMeasure;
+  private IDistanceMeasure distanceMeasure;
 
-  public KMeans(List<IClusterable> clusterable, IDistanceQuality distanceMeasure) {
+  public KMeans(List<IClusterable> clusterable, IDistanceMeasure distanceMeasure) {
     this.clusterable = clusterable;
     this.distanceMeasure = distanceMeasure;
   }
@@ -148,7 +148,7 @@ public class KMeans {
 
     for (IClusterable point : clusterable) {
       for (int i = avg.length - 1; i >= 0; --i) {
-        avg[i] += point.getPoint(i);
+        avg[i] += point.getComponent(i);
       }
     }
 

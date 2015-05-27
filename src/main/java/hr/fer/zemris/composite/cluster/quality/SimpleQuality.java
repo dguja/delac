@@ -1,6 +1,6 @@
-package hr.fer.zemris.cluster.quality;
+package hr.fer.zemris.composite.cluster.quality;
 
-import hr.fer.zemris.cluster.ICluster;
+import hr.fer.zemris.composite.cluster.ICluster;
 
 import java.util.List;
 

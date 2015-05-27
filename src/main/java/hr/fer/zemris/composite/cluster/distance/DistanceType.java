@@ -1,6 +1,5 @@
-package hr.fer.zemris.cluster.distance;
+package hr.fer.zemris.composite.cluster.distance;
 
-import hr.fer.zemris.cluster.IDistanceQuality;
 
 
 public enum DistanceType {
@@ -10,13 +9,13 @@ public enum DistanceType {
   WEIGHTED_JACCARD(WeightedJaccard::measure), 
   COSINE(null);
   
-  private IDistanceQuality distanceMeasure;
+  private IDistanceMeasure distanceMeasure;
   
-  private DistanceType(IDistanceQuality distanceMeasure) {
+  private DistanceType(IDistanceMeasure distanceMeasure) {
     this.distanceMeasure = distanceMeasure;
   }
   
-  public IDistanceQuality getDistanceMeasure() {
+  public IDistanceMeasure getDistanceMeasure() {
     return distanceMeasure;
   }
   

@@ -1,6 +1,5 @@
-package hr.fer.zemris.cluster.quality;
+package hr.fer.zemris.composite.cluster.quality;
 
-import hr.fer.zemris.cluster.IQualityMeasure;
 
 
 public enum QualityType {

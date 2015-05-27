@@ -1,6 +1,6 @@
-package hr.fer.zemris.cluster.distance;
+package hr.fer.zemris.composite.cluster.distance;
 
-import hr.fer.zemris.cluster.IClusterable;
+import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 
 public class NormedEuclid {
 
@@ -14,13 +14,13 @@ public class NormedEuclid {
     int union = 0;
 
     for (int i = vector1.getDimension() - 1; i >= 0; i--) {
-      if (vector1.getPoint(i) != 0 && vector2.getPoint(i) != 0) {
+      if (vector1.getComponent(i) != 0 && vector2.getComponent(i) != 0) {
         section++;
       }
-      if (vector1.getPoint(i) != 0 || vector2.getPoint(i) != 0) {
+      if (vector1.getComponent(i) != 0 || vector2.getComponent(i) != 0) {
         union++;
       }
-      sum += Math.pow(vector1.getPoint(i) - vector2.getPoint(i), 2);
+      sum += Math.pow(vector1.getComponent(i) - vector2.getComponent(i), 2);
     }
 
     return sum / (section / union);
