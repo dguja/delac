@@ -1,6 +1,5 @@
-package hr.fer.zemris.composite.cluster.algorithm;
+package hr.fer.zemris.composite.cluster.algorithm.kmeans;
 
-import hr.fer.zemris.composite.cluster.KMeansCluster;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.cluster.distance.IDistanceMeasure;
@@ -25,24 +24,24 @@ public class KMeans {
     this.distanceMeasure = distanceMeasure;
   }
 
-  public List<KMeansCluster> run(int k, int maxIter) {
+  public List<Cluster> run(int k, int maxIter) {
 
     List<IClusterable> centroids = selectInitCentroids(k);
 
-    List<KMeansCluster> kMeansClusters = createClusters(centroids);
-    List<KMeansCluster> oldClusters = null;
+    List<Cluster> clusters = createClusters(centroids);
+    List<Cluster> oldClusters = null;
 
     for (int i = 0; i < maxIter; i++) {
 
       for (IClusterable point : clusterable) {
-        KMeansCluster tmpCluster = null;
+        Cluster tmpCluster = null;
         double distance = Double.MAX_VALUE;
 
-        for (KMeansCluster kMeansCluster : kMeansClusters) {
-          double tmpDistance = distanceMeasure.measure(kMeansCluster.getCentroid(), point);
+        for (Cluster cluster : clusters) {
+          double tmpDistance = distanceMeasure.measure(cluster.getCentroid(), point);
           if (tmpDistance < distance) {
             distance = tmpDistance;
-            tmpCluster = kMeansCluster;
+            tmpCluster = cluster;
           }
         }
 
@@ -50,16 +49,16 @@ public class KMeans {
 
       }
 
-      if (kMeansClusters.equals(oldClusters)) {
+      if (clusters.equals(oldClusters)) {
         break;
       }
       
-      oldClusters = kMeansClusters;
-      kMeansClusters = calculateNewCentroids(kMeansClusters);
+      oldClusters = clusters;
+      clusters = calculateNewCentroids(clusters);
 
     }
 
-    return kMeansClusters;
+    return clusters;
   }
 
   private List<IClusterable> selectInitCentroids(int k) {
@@ -114,29 +113,29 @@ public class KMeans {
    * @param centroids klastera
    * @return lista klastera
    */
-  private List<KMeansCluster> createClusters(List<IClusterable> centroids) {
-    List<KMeansCluster> kMeansClusters = new ArrayList<>();
+  private List<Cluster> createClusters(List<IClusterable> centroids) {
+    List<Cluster> clusters = new ArrayList<>();
 
     for (IClusterable centroid : centroids) {
-      kMeansClusters.add(new KMeansCluster(new HashSet<IClusterable>(), centroid));
+      clusters.add(new Cluster(new HashSet<IClusterable>(), centroid));
     }
 
-    return kMeansClusters;
+    return clusters;
   }
 
   /**
    * Vraca listu novu klastera kojima je postavljen jedino centroid.
    * 
-   * @param kMeansClusters na temelju kojih se racunaju novi centroidi
+   * @param clusters na temelju kojih se racunaju novi centroidi
    * @return lista novih klastera s postavljenim centroidima
    */
-  private List<KMeansCluster> calculateNewCentroids(List<KMeansCluster> kMeansClusters) {
-    List<KMeansCluster> newClusters = new ArrayList<>();
+  private List<Cluster> calculateNewCentroids(List<Cluster> clusters) {
+    List<Cluster> newClusters = new ArrayList<>();
 
-    for (KMeansCluster kMeansCluster : kMeansClusters) {
+    for (Cluster cluster : clusters) {
 
-      double[] avg = calculateAvg(kMeansCluster.getClusterable(), kMeansCluster.getCentroid().getDimension());
-      newClusters.add(new KMeansCluster(new HashSet<IClusterable>(), new Vector(avg)));
+      double[] avg = calculateAvg(cluster.getClusterable(), cluster.getCentroid().getDimension());
+      newClusters.add(new Cluster(new HashSet<IClusterable>(), new Vector(avg)));
 
     }
 
