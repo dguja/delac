@@ -111,21 +111,6 @@ public class ConfigParser {
         putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
       }
     }
-    if (root.has("discreteDistributions")) {
-      final JsonArray discreteDistributions = getJsonArray(root, "discreteDistributions", ERROR_ROOT_PARAMETER);
-      for (int i = 0, size = discreteDistributions.size(); i < size; i++) {
-        final JsonObject current = discreteDistributions.get(i).getAsJsonObject();
-        putDiscreteDistribution(current, ERROR_DISCRETE_DISTRIBUTIONS_PARAMETER + i + ". ");
-      }
-    }
-
-    if (root.has("realDistributions")) {
-      final JsonArray realDistributions = getJsonArray(root, "realDistributions", ERROR_ROOT_PARAMETER);
-      for (int i = 0, size = realDistributions.size(); i < size; i++) {
-        final JsonObject current = realDistributions.get(i).getAsJsonObject();
-        putRealDistribution(current, ERROR_REAL_DISTRIBUTIONS_PARAMETER + i + ". ");
-      }
-    }
   }
 
   private void putDiscreteDistribution(final JsonObject current, final String error) {
