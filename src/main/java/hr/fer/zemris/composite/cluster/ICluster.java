@@ -1,9 +1,11 @@
 package hr.fer.zemris.composite.cluster;
 
+import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
+
 public interface ICluster {
 
-  int getDimension();
+  int getSize();
 
-  double getComponent(int index);
+  IClusterable getComponent(int index);
 
 }
