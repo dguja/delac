@@ -1,12 +1,10 @@
-package hr.fer.zemris.composite.generator.daniel.distance;
+package hr.fer.zemris.cluster.distance;
 
-import hr.fer.zemris.composite.generator.daniel.IClusterable;
-import hr.fer.zemris.composite.generator.daniel.IDistanceMeasure;
+import hr.fer.zemris.cluster.IClusterable;
 
-public class EuclidDistance implements IDistanceMeasure {
+public class EuclidDistance {
 
-  @Override
-  public double compute(IClusterable vector1, IClusterable vector2) {
+  public static double measure(IClusterable vector1, IClusterable vector2) {
     if (vector1.getDimension() != vector2.getDimension()) {
       throw new IllegalArgumentException("Vektori nisu istih dimenzija!");
     }

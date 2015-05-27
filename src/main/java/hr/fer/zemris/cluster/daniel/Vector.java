@@ -1,6 +1,6 @@
-package hr.fer.zemris.composite.generator.daniel.cluster;
+package hr.fer.zemris.cluster.daniel;
 
-import hr.fer.zemris.composite.generator.daniel.IClusterable;
+import hr.fer.zemris.cluster.IClusterable;
 
 import java.util.Arrays;
 
@@ -15,11 +15,6 @@ public class Vector implements IClusterable {
   @Override
   public int getDimension() {
     return values.length;
-  }
-
-  @Override
-  public double[] getPoints() {
-    return values;
   }
 
   @Override

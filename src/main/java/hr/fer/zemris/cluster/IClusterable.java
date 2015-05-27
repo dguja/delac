@@ -1,8 +1,6 @@
-package hr.fer.zemris.composite.generator.daniel;
+package hr.fer.zemris.cluster;
 
 public interface IClusterable {
-
-  double[] getPoints();
 
   double getPoint(int index);
 

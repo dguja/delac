@@ -1,7 +1,9 @@
-package hr.fer.zemris.composite.generator.daniel;
+package hr.fer.zemris.cluster.algorithms;
 
-import hr.fer.zemris.composite.generator.daniel.cluster.Cluster;
-import hr.fer.zemris.composite.generator.daniel.cluster.Vector;
+import hr.fer.zemris.cluster.IClusterable;
+import hr.fer.zemris.cluster.IDistanceQuality;
+import hr.fer.zemris.cluster.daniel.Cluster;
+import hr.fer.zemris.cluster.daniel.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,9 +18,9 @@ public class KMeans {
 
   private List<IClusterable> clusterable;
 
-  private IDistanceMeasure distanceMeasure;
+  private IDistanceQuality distanceMeasure;
 
-  public KMeans(List<IClusterable> clusterable, IDistanceMeasure distanceMeasure) {
+  public KMeans(List<IClusterable> clusterable, IDistanceQuality distanceMeasure) {
     this.clusterable = clusterable;
     this.distanceMeasure = distanceMeasure;
   }
@@ -37,7 +39,7 @@ public class KMeans {
         double distance = Double.MAX_VALUE;
 
         for (Cluster cluster : clusters) {
-          double tmpDistance = distanceMeasure.compute(cluster.getCentroid(), point);
+          double tmpDistance = distanceMeasure.measure(cluster.getCentroid(), point);
           if (tmpDistance < distance) {
             distance = tmpDistance;
             tmpCluster = cluster;
@@ -82,7 +84,7 @@ public class KMeans {
         double distMin = Double.MAX_VALUE;
 
         for (IClusterable centroid : centroids) {
-          distMin = Math.min(distMin, distanceMeasure.compute(point, centroid));
+          distMin = Math.min(distMin, distanceMeasure.measure(point, centroid));
         }
 
         // pohrani minimalnu udaljenost tocke do centroida
