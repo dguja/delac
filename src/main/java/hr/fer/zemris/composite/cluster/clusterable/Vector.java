@@ -5,7 +5,11 @@ import java.util.Arrays;
 public class Vector implements IClusterable {
 
   private double[] values;
-
+  
+  public Vector(int dimension) {
+    values = new double[dimension];
+  }
+  
   public Vector(double[] values) {
     this.values = Arrays.copyOf(values, values.length);
   }

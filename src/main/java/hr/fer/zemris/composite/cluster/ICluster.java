@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface ICluster {
 
+  int getN();
+  
   List<IClusterable> getPoints();
 
 }

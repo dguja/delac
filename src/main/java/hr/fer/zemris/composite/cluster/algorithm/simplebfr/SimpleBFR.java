@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 
 public class SimpleBFR implements IAlgorithm {
 
-  private static final int K = 10;
+  private static final int CLUSTER_NUM = 10;
 
   private static final int MAX_ITERATION = 100;
 
@@ -49,7 +49,7 @@ public class SimpleBFR implements IAlgorithm {
     List<Cluster> clusters = new ArrayList<>();
     for (int i = 0; i < points.size(); i += clusterSize) {
       clusters =
-          clusterChunk(clusters, points.subList(i, Math.min(points.size(), i + clusterSize)));
+          clusterBucket(clusters, points.subList(i, Math.min(points.size(), i + clusterSize)));
     }
 
     // pretvori u listu IClustera
@@ -58,7 +58,7 @@ public class SimpleBFR implements IAlgorithm {
     return iClusters;
   }
 
-  private List<Cluster> clusterChunk(List<Cluster> clusters, List<IClusterable> points) {
+  private List<Cluster> clusterBucket(List<Cluster> clusters, List<IClusterable> points) {
     // odredi centroide za klasteriranje
     List<IClusterable> centroids = new ArrayList<>();
     fillClusterCentroids(centroids, clusters);
@@ -155,7 +155,7 @@ public class SimpleBFR implements IAlgorithm {
   }
 
   private void fillCentroids(List<IClusterable> centroids, List<IClusterable> points) {
-    int fillCount = Math.min(K - centroids.size(), points.size());
+    int fillCount = Math.min(CLUSTER_NUM - centroids.size(), points.size());
     for (int i = 0; i < fillCount; ++i) {
       Map<IClusterable, Double> pointDistance = new HashMap<>();
 

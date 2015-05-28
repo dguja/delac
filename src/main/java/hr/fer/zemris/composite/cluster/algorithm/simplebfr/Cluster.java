@@ -20,6 +20,11 @@ public class Cluster implements ICluster {
   }
 
   @Override
+  public int getN() {
+    return points.size();
+  }
+  
+  @Override
   public List<IClusterable> getPoints() {
     return points;
   }
