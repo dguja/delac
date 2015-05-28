@@ -9,45 +9,28 @@ import java.util.List;
 
 public class Cluster implements ICluster {
 
-  private int dimension;
-  
   private List<IClusterable> points = new ArrayList<>();
-  
-  private IClusterable centroid;
+
+  private ClusterSummary clusterSummary;
+
+  public Cluster(IClusterable point) {
+    super();
+    points.add(point);
+    clusterSummary = new ClusterSummary(point);
+  }
 
   @Override
   public List<IClusterable> getPoints() {
     return points;
   }
 
-  public int getWeight() {
-    return points.size();
+  public ClusterSummary getClusterSummary() {
+    return clusterSummary;
   }
-  
-  public void addPoint(IClusterable point) {
-    points.add(point);
-  }
-  
-  public void addSubcluster(ICluster subcluster) {
+
+  public void addSubcluster(Cluster subcluster) {
     points.addAll(subcluster.getPoints());
-  }
-
-  public void calculateCentroid() {
-    if (points.isEmpty()) {
-      centroid = null;
-    }
-
-    double[] values = new double[dimension];
-    for (IClusterable point : points) {
-      for (int i = 0; i < dimension; ++i) {
-        values[i] += point.get(i);
-      }
-    }
-    for (int i = 0; i < dimension; ++i) {
-      values[i] /= points.size();
-    }
-
-    centroid = new Vector(values);
+    clusterSummary.addClusterSummary(subcluster.getClusterSummary());
   }
 
 }

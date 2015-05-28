@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class SimpleBFR implements IAlgorithm {
 
@@ -21,8 +22,6 @@ public class SimpleBFR implements IAlgorithm {
 
   private static final double BUCKET_COEFF = 0.1;
 
-  private List<ICluster> clusters = new ArrayList<>();
-  
   private IDistanceMeasure distanceMeasure;
 
   private IQualityMeasure qualityMeasure;
@@ -45,75 +44,143 @@ public class SimpleBFR implements IAlgorithm {
 
   @Override
   public List<ICluster> cluster(List<IClusterable> points) {
-    clusters.clear();
     int clusterSize = (int) (points.size() * BUCKET_COEFF);
 
+    List<Cluster> clusters = new ArrayList<>();
     for (int i = 0; i < points.size(); i += clusterSize) {
-      clusterChunk(points.subList(i, Math.min(points.size(), i + clusterSize)));
+      clusters =
+          clusterChunk(clusters, points.subList(i, Math.min(points.size(), i + clusterSize)));
     }
 
-    // pretvori listu Clustera u listu IClustera
-    return clusters;
+    // pretvori u listu IClustera
+    List<ICluster> iClusters = new ArrayList<>();
+    iClusters.addAll(clusters);
+    return iClusters;
   }
 
-  private void clusterChunk(List<IClusterable> points) {
-    List<ClusterSummary> centroids = new ArrayList<>();
-    List<ClusterSummary> clusterSummaries = new ArrayList<>();
-    Map<Integer, Integer> summaryToCentroid = new HashMap<>();
-    
-    // odredi pocetne centroide
-    //calculateCentroids();
-    
+  private List<Cluster> clusterChunk(List<Cluster> clusters, List<IClusterable> points) {
+    // odredi centroide za klasteriranje
+    List<IClusterable> centroids = new ArrayList<>();
+    fillClusterCentroids(centroids, clusters);
+    fillCentroids(centroids, points);
+
+    // dodaj nove klastere
+    fillClusters(clusters, points);
+
+    Map<Cluster, Integer> clusterToCentroid = new HashMap<>();
     for (int iter = 0; iter < MAX_ITERATION; ++iter) {
       List<ClusterSummary> newCentroids = new ArrayList<>(centroids.size());
-      
-      // za svaku tocku, nadji najblizi centroid
-      for (int index = 0; index < clusterSummaries.size(); ++index) {
-        ClusterSummary clusterSummary = clusterSummaries.get(index);
-        Integer closestCentroidIndex = findClosestCentroidIndex(clusterSummary.getCentroid(), centroids);
-        
-        summaryToCentroid.put(index, closestCentroidIndex);
-        newCentroids.get(closestCentroidIndex).addClusterSummary(clusterSummary);
+
+      // za svaki klaster odredi najblizi centroid
+      for (Cluster cluster : clusters) {
+        ClusterSummary clusterSummary = cluster.getClusterSummary();
+
+        Integer closestCentroidIndex =
+            findClosestCentroidIndex(clusterSummary.getCentroid(), centroids);
+
+        clusterToCentroid.put(cluster, closestCentroidIndex);
+
+        ClusterSummary newCentroid = newCentroids.get(closestCentroidIndex);
+        if (newCentroid == null) {
+          newCentroid = clusterSummary.copy();
+        } else {
+          newCentroid.addClusterSummary(clusterSummary);
+        }
+        newCentroids.set(closestCentroidIndex, newCentroid);
       }
 
-      // ako se nista nije promijenilo, prekini
-      if (clusters.equals(oldClusters)) {
+      // zapamti stare centroide
+      List<IClusterable> oldCentroids = centroids;
+
+      // postavi nove centroide, dodaj nove ako ih fali
+      centroids.clear();
+      fillClusterSummaryCentroids(centroids, newCentroids);
+      fillCentroids(centroids, points);
+      
+      // ako se nije nista promijenilo, prekini
+      if (oldCentroids.equals(centroids)) {
         break;
       }
-      oldClusters = clusters;
-
-      // izracunaj nove centroide i ako ih fali dodaj nove
-      updateClusters(clusters);
     }
-    
+
+    // napravi nove klastere
     List<Cluster> newClusters = new ArrayList<>();
-    for ()
+    for (Entry<Cluster, Integer> entry : clusterToCentroid.entrySet()) {
+      Cluster cluster = newClusters.get(entry.getValue());
+      if (cluster == null) {
+        cluster = entry.getKey();
+      } else {
+        cluster.addSubcluster(entry.getKey());
+      }
+      newClusters.set(entry.getValue(), cluster);
+    }
+    return newClusters;
   }
 
-  private Integer findClosestCentroidIndex(IClusterable point, List<ClusterSummary> clusterSummaries) {
+  private Integer findClosestCentroidIndex(IClusterable point, List<IClusterable> centroids) {
     double distance = Double.MAX_VALUE;
     Integer closestCentroidIndex = null;
 
-    for (int index = 0; index < clusterSummaries.size(); ++index) {
-      double nDistance = distanceMeasure.measure(point, clusterSummaries.get(index).getCentroid());
+    for (int index = 0; index < centroids.size(); ++index) {
+      double nDistance = distanceMeasure.measure(point, centroids.get(index));
 
       if (nDistance < distance) {
         distance = nDistance;
         closestCentroidIndex = index;
       }
     }
-
+ 
     return closestCentroidIndex;
   }
-  
-  private void initializeClusters(List<Cluster> clusters) {
-  }
 
-  private void updateClusters(List<Cluster> clusters) {
-    for (Cluster cluster : clusters) {
-      cluster.calculateCentroid();
-      cluster.clearPointSummaries();
+  private void fillClusters(List<Cluster> clusters, List<IClusterable> points) {
+    for (IClusterable point : points) {
+      clusters.add(new Cluster(point));
     }
   }
-  
+
+  private void fillClusterCentroids(List<IClusterable> centroids, List<Cluster> clusters) {
+    for (Cluster cluster : clusters) {
+      centroids.add(cluster.getClusterSummary().getCentroid());
+    }
+  }
+
+  private void fillClusterSummaryCentroids(List<IClusterable> centroids,
+      List<ClusterSummary> clusterSummaries) {
+    for (ClusterSummary clusterSummary : clusterSummaries) {
+      if (clusterSummary != null) {
+        centroids.add(clusterSummary.getCentroid());
+      }
+    }
+  }
+
+  private void fillCentroids(List<IClusterable> centroids, List<IClusterable> points) {
+    int fillCount = Math.min(K - centroids.size(), points.size());
+    for (int i = 0; i < fillCount; ++i) {
+      Map<IClusterable, Double> pointDistance = new HashMap<>();
+
+      // za svaku tocku odredi minimalnu udaljenost do centroida
+      for (IClusterable point : points) {
+        double minDistance = Double.MAX_VALUE;
+        for (IClusterable centroid : centroids) {
+          minDistance = Math.min(minDistance, distanceMeasure.measure(point, centroid));
+        }
+        pointDistance.put(point, minDistance);
+      }
+
+      // odredi tocku s maksimalnom udaljenoscu
+      IClusterable centroid = null;
+
+      double maxDistance = Double.MIN_VALUE;
+      for (Entry<IClusterable, Double> entry : pointDistance.entrySet()) {
+        if (entry.getValue() > maxDistance) {
+          centroid = entry.getKey();
+          maxDistance = entry.getValue();
+        }
+      }
+
+      centroids.add(centroid);
+    }
+  }
+
 }
