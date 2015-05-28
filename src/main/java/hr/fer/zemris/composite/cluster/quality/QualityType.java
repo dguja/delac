@@ -4,7 +4,7 @@ package hr.fer.zemris.composite.cluster.quality;
 
 public enum QualityType {
 
-  SIMPLE(SimpleQuality::measure);
+  SQUARED_DIST_SUM(SquaredDistSumQuality::measure);
   
  private IQualityMeasure qualityMeasure;
   
