@@ -7,7 +7,7 @@ public class Vector implements IClusterable {
   private double[] values;
 
   public Vector(double[] values) {
-    this.values = values;
+    this.values = Arrays.copyOf(values, values.length);
   }
 
   @Override
@@ -16,7 +16,7 @@ public class Vector implements IClusterable {
   }
 
   @Override
-  public double getComponent(int index) {
+  public double get(int index) {
     if (index >= values.length) {
       throw new IndexOutOfBoundsException();
     }
@@ -24,14 +24,36 @@ public class Vector implements IClusterable {
   }
 
   @Override
-  public IClusterable copy() {
-    double[] copy = new double[values.length];
+  public void set(int index, double value) {
+    if (index < 0 || index >= values.length) {
+      throw new IndexOutOfBoundsException();
+    }
+    values[index] = value;
+  }
 
-    for (int i = 0; i < values.length; i++) {
-      copy[i] = values[i];
+  @Override
+  public void add(IClusterable other) {
+    if (getDimension() != other.getDimension()) {
+      throw new IllegalArgumentException("Incompatible array length.");
     }
 
-    return new Vector(copy);
+    for (int i = 0; i < getDimension(); ++i) {
+      values[i] += other.get(i);
+    }
+  }
+
+  @Override
+  public IClusterable nScalarMultiply(double scalar) {
+    IClusterable vector = this.copy();
+    for (int i = 0; i < values.length; ++i) {
+      vector.set(i, vector.get(i) * scalar);
+    }
+    return vector;
+  }
+
+  @Override
+  public IClusterable copy() {
+    return new Vector(values);
   }
 
   @Override

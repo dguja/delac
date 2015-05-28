@@ -17,6 +17,8 @@ public class BFR implements IAlgorithm {
 
   private static final int CHUNK_SIZE = 1000;
   
+  private static int mahalanobisTreshold;
+  
   private List<ICluster> clusters = new ArrayList<>();
   
   private Set<ClusterSummary> discardSet = new HashSet<>();
@@ -50,6 +52,8 @@ public class BFR implements IAlgorithm {
   @Override
   public List<ICluster> cluster(List<IClusterable> clusterables) {
     clusters.clear();
+    
+    mahalanobisTreshold = clusterables.get(0).getDimension();
 
 
     return clusters;

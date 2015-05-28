@@ -1,6 +1,6 @@
 package hr.fer.zemris.composite.cluster.reliability;
 
-import hr.fer.zemris.composite.cluster.clusterable.ReliabilityImpactVector;
+import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.generator.model.Dataset;
 import hr.fer.zemris.composite.generator.model.DirectionType;
 import hr.fer.zemris.composite.generator.model.Model;
@@ -16,8 +16,8 @@ import java.util.TreeSet;
 
 public class ReliabilityImpactCalculator {
 
-  public static List<ReliabilityImpactVector> calculate(Dataset dataset) {
-    List<ReliabilityImpactVector> relImpacts = new ArrayList<>();
+  public static List<Vector> calculate(Dataset dataset) {
+    List<Vector> relImpacts = new ArrayList<>();
     Map<Long, Integer> idToIndex = generateIdToIndexMap(dataset);
 
     double[] relImpact = new double[dataset.getInputNodeCount()];
@@ -32,7 +32,7 @@ public class ReliabilityImpactCalculator {
             calculateReliabilityImpact(inputNode, outputNode, oldReliability);
       }
 
-      relImpacts.add(new ReliabilityImpactVector(relImpact));
+      relImpacts.add(new Vector(relImpact));
     }
 
     return relImpacts;

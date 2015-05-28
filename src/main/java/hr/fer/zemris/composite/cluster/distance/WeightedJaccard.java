@@ -12,8 +12,8 @@ public class WeightedJaccard {
     double nominator = 0, denominator = 0;
 
     for (int i = vector1.getDimension() - 1; i >= 0; i--) {
-      nominator += Math.min(vector1.getComponent(i), vector2.getComponent(i));
-      denominator += Math.max(vector1.getComponent(i), vector2.getComponent(i));
+      nominator += Math.min(vector1.get(i), vector2.get(i));
+      denominator += Math.max(vector1.get(i), vector2.get(i));
     }
 
     return 1 - nominator / denominator;

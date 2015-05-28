@@ -4,8 +4,14 @@ public interface IClusterable {
 
   int getDimension();
 
-  double getComponent(int index);
+  double get(int index);
 
+  void set(int index, double value);
+  
+  void add(IClusterable other);
+  
+  IClusterable nScalarMultiply(double scalar);
+  
   IClusterable copy();
 
 }

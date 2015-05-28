@@ -147,7 +147,7 @@ public class KMeans {
 
     for (IClusterable point : clusterable) {
       for (int i = avg.length - 1; i >= 0; --i) {
-        avg[i] += point.getComponent(i);
+        avg[i] += point.get(i);
       }
     }
 

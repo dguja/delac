@@ -13,10 +13,10 @@ public class EuclidDistance {
     double sum = 0;
 
     for (int i = vector1.getDimension() - 1; i >= 0; i--) {
-      if (vector1.getComponent(i) != 0 && vector2.getComponent(i) != 0) {
+      if (vector1.get(i) != 0 && vector2.get(i) != 0) {
         n++;
       }
-      sum += Math.pow(vector1.getComponent(i) - vector2.getComponent(i), 2);
+      sum += Math.pow(vector1.get(i) - vector2.get(i), 2);
     }
 
     return Math.sqrt(sum) / (double) n;
