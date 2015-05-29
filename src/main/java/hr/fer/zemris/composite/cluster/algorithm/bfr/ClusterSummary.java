@@ -1,65 +1,53 @@
 package hr.fer.zemris.composite.cluster.algorithm.bfr;
 
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
-
-import java.util.ArrayList;
-import java.util.List;
+import hr.fer.zemris.composite.cluster.clusterable.Vector;
 
 public class ClusterSummary {
 
-  // number of points
   private int n;
-  
-  // sum of all vectors per component
-  private double[] sum;
 
-  // sum of squares of all vectors per component
-  private double[] sumsq;
-  
-  // dimension of vector
-  private int dim;
-  
-  public ClusterSummary(int n, double[] sum, double[] sumsq) {
+  private IClusterable sum;
+
+  private IClusterable sumsq;
+
+  private ClusterSummary(int n, IClusterable sum, IClusterable sumsq) {
     super();
     this.n = n;
     this.sum = sum;
     this.sumsq = sumsq;
-    this.dim = sum.length;
-    
-    if (sumsq.length != sum.length) {
-      throw new IllegalArgumentException("Different length of sum and sumsq vectors.");
+  }
+
+  public ClusterSummary(IClusterable point) {
+    super();
+    n = 1;
+    sum = point;
+    sumsq = new Vector(point.getDimension());
+    for (int i = 0; i < point.getDimension(); ++i) {
+      sumsq.set(i, Math.pow(point.get(i), 2));
     }
   }
 
-  public double[] getCentroid() {
-    double[] centroid = new double[dim];
-    for (int i = 0; i < dim; ++i) {
-      centroid[i] = sum[i] / n;
-    }
-
-    return centroid;
+  public IClusterable getCentroid() {
+    return sum.nScalarMultiply(1. / n);
   }
-
-  public double[] getVariance() {
-    double[] variance = new double[dim];
-    for (int i = 0; i < dim; ++i) {
-      variance[i] = sumsq[i] / n - Math.pow(sum[i] / n, 2);
+  
+  public IClusterable getVariance() {
+    IClusterable variance = new Vector(sum.getDimension());
+    for (int i = 0; i < variance.getDimension(); ++i) {
+      variance.set(i, sumsq.get(i) / n - Math.pow(sum.get(i) / n, 2));
     }
-
     return variance;
   }
-  
-  public ClusterSummary nMerge(ClusterSummary other) {
-    int mergeN = n + other.n;
-    double[] mergeSum = new double[dim];
-    double[] mergeSumsq = new double[dim];
-    
-    for (int i = 0; i < dim; ++i) {
-      mergeSum[i] = sum[i] + other.sum[i];
-      mergeSumsq[i] = sumsq[i] + other.sumsq[i];
-    }
-    
-    return new ClusterSummary(mergeN, mergeSum, mergeSumsq);
+
+  public void addClusterSummary(ClusterSummary other) {
+    n += other.n;
+    sum.add(other.sum);
+    sumsq.add(other.sumsq);
   }
-  
+
+  public ClusterSummary copy() {
+    return new ClusterSummary(n, sum, sumsq);
+  }
+
 }

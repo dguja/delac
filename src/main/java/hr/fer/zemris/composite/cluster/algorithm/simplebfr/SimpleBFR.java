@@ -9,6 +9,7 @@ import hr.fer.zemris.composite.cluster.quality.IQualityMeasure;
 import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class SimpleBFR implements IAlgorithm {
 
   private static final int MAX_ITERATION = 100;
 
-  private static final double BUCKET_COEFF = 0.1;
+  private static final double BUCKET_FRACTION = 0.1;
 
   private IDistanceMeasure distanceMeasure;
 
@@ -44,7 +45,7 @@ public class SimpleBFR implements IAlgorithm {
 
   @Override
   public List<ICluster> cluster(List<IClusterable> points) {
-    int clusterSize = (int) (points.size() * BUCKET_COEFF);
+    int clusterSize = (int) (points.size() * BUCKET_FRACTION);
 
     List<Cluster> clusters = new ArrayList<>();
     for (int i = 0; i < points.size(); i += clusterSize) {
@@ -90,7 +91,7 @@ public class SimpleBFR implements IAlgorithm {
       }
 
       // zapamti stare centroide
-      List<IClusterable> oldCentroids = centroids;
+      List<IClusterable> oldCentroids = new ArrayList<>(centroids);
 
       // postavi nove centroide, dodaj nove ako ih fali
       centroids.clear();
@@ -104,7 +105,7 @@ public class SimpleBFR implements IAlgorithm {
     }
 
     // napravi nove klastere
-    List<Cluster> newClusters = new ArrayList<>();
+    List<Cluster> newClusters = new ArrayList<>(centroids.size()); // ovo treba popraviti
     for (Entry<Cluster, Integer> entry : clusterToCentroid.entrySet()) {
       Cluster cluster = newClusters.get(entry.getValue());
       if (cluster == null) {

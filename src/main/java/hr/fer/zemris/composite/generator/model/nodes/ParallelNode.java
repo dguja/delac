@@ -36,27 +36,23 @@ public class ParallelNode extends AbstractNode {
 
   @Override
   protected void calculateDirectReliability() {
-    reliability = 0.0;
     final int numParents = parents.size();
-    final int numCombinations = 1 << numParents;
-    
-    for (int mask = 0; mask < numCombinations; ++mask) {
-      if (Integer.bitCount(mask) < k) {
-        continue;
-      }
 
-      double combReliability = 1.0;
-      for (int i = 0; i < numParents; ++i) {
-        final double parentReliability = parents.get(i).getReliability();
-
-        if ((mask & (1 << i)) == 0) {
-          combReliability *= (1 - parentReliability);
-        } else {
-          combReliability *= parentReliability;
+    double[][] dp = new double[numParents + 1][k];
+    dp[0][0] = 1;
+    for (int i = 1; i <= numParents; ++i) {
+      double parentReliability = parents.get(i - 1).getReliability();
+      for (int j = 0; j < k; ++j) {
+        dp[i][j] = dp[i - 1][j] * (1 - parentReliability);
+        if (j > 0) {
+          dp[i][j] += dp[i - 1][j - 1] * parentReliability;
         }
       }
+    }
 
-      reliability += combReliability;
+    reliability = 1.0;
+    for (int i = 0; i < k; ++i) {
+      reliability -= dp[numParents][i];
     }
   }
 
@@ -66,7 +62,8 @@ public class ParallelNode extends AbstractNode {
 
     k = new IntegerDistributionLimiter(kDistribution, 0, parents.size()).sample();
     if (k < 1) {
-      throw new GeneratorException("'parallelParameter' distribution returned a value lesser than 1: " + k + ".");
+      throw new GeneratorException(
+          "'parallelParameter' distribution returned a value lesser than 1: " + k + ".");
     }
   }
 

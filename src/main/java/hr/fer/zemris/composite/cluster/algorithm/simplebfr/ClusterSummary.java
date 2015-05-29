@@ -16,8 +16,8 @@ public class ClusterSummary {
 
   public ClusterSummary(IClusterable point) {
     super();
-    this.sum = point;
-    this.n = 1;
+    n = 1;
+    sum = point;
   }
 
   public IClusterable getCentroid() {
@@ -25,8 +25,8 @@ public class ClusterSummary {
   }
 
   public void addClusterSummary(ClusterSummary other) {
-    sum.add(other.sum);
     n += other.n;
+    sum.add(other.sum);
   }
 
   public ClusterSummary copy() {
