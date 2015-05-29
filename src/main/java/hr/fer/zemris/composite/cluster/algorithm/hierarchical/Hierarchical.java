@@ -31,6 +31,21 @@ public class Hierarchical implements IAlgorithm {
 
   @Override
   public List<ICluster> cluster(List<IClusterable> vectors) {
+    double quality = Double.MAX_VALUE;
+    List<ICluster> result = null;
+    for (int i = k; i <= k; i++) {
+      List<ICluster> tmp = calculateClusters(vectors, i);
+      double resultQuality = qualityMeasure.measure(tmp);
+      System.out.println("k = " + i + ", quality = " + resultQuality);
+      if (resultQuality < quality) {
+        quality = resultQuality;
+        result = tmp;
+      }
+    }
+    return result;
+  }
+
+  private List<ICluster> calculateClusters(List<IClusterable> vectors, int k) {
     Queue<Distance> distancePairs = new PriorityQueue<>();
     Map<Cluster, Boolean> visited = new HashMap<>();
     List<Cluster> clusters = new ArrayList<>();
@@ -41,32 +56,36 @@ public class Hierarchical implements IAlgorithm {
     initDistances(distancePairs, clusters);
 
     for (int i = 0; i < n - k; i++) {
-      Distance distance = null;
-      while (true) {
-        distance = distancePairs.poll();
-        if (visited.get(distance.getFirst()) == null && visited.get(distance.getSecond()) == null) {
-          break;
-        }
-      }
-
-      Cluster first = distance.getFirst();
-      Cluster second = distance.getSecond();
-      visited.put(first, true);
-      visited.put(second, true);
-      Cluster newCluster = new Cluster(first, second);
-
-      clusters.remove(first);
-      clusters.remove(second);
-
-
-      for (Cluster cluster : clusters) {
-        addDistance(distancePairs, cluster, newCluster);
-      }
-
-      clusters.add(newCluster);
+      newIteration(distancePairs, visited, clusters);
     }
 
     return new ArrayList<ICluster>(clusters);
+  }
+
+  private void newIteration(Queue<Distance> distancePairs, Map<Cluster, Boolean> visited,
+      List<Cluster> clusters) {
+    Distance distance = null;
+    while (true) {
+      distance = distancePairs.poll();
+      if (visited.get(distance.getFirst()) == null && visited.get(distance.getSecond()) == null) {
+        break;
+      }
+    }
+
+    Cluster first = distance.getFirst();
+    Cluster second = distance.getSecond();
+    visited.put(first, true);
+    visited.put(second, true);
+    Cluster newCluster = new Cluster(first, second);
+
+    clusters.remove(first);
+    clusters.remove(second);
+
+    for (Cluster cluster : clusters) {
+      addDistance(distancePairs, cluster, newCluster);
+    }
+
+    clusters.add(newCluster);
   }
 
   private void initClusters(List<Cluster> clusters, List<IClusterable> vectors) {
