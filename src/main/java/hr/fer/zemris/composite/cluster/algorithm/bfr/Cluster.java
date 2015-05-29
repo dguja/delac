@@ -1,4 +1,4 @@
-package hr.fer.zemris.composite.cluster.algorithm.simplebfr;
+package hr.fer.zemris.composite.cluster.algorithm.bfr;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
@@ -11,7 +11,7 @@ public class Cluster implements ICluster {
   private List<IClusterable> points = new ArrayList<>();
 
   private ClusterSummary clusterSummary;
-
+  
   public Cluster(IClusterable point) {
     super();
     points.add(point);
