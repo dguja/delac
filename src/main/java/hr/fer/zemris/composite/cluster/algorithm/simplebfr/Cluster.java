@@ -2,7 +2,6 @@ package hr.fer.zemris.composite.cluster.algorithm.simplebfr;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
-import hr.fer.zemris.composite.cluster.clusterable.Vector;
 
 import java.util.ArrayList;
 import java.util.List;

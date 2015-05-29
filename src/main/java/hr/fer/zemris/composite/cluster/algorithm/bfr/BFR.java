@@ -12,10 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 public class BFR implements IAlgorithm {
@@ -138,19 +136,45 @@ public class BFR implements IAlgorithm {
 
       discardClusters.add(discardCluster);
     }
-
+    
     // secondary compression phase
+    bucketClusters.clear();
+    
+    // klasteriraj po vecem broju klastera i iteracija
     centroidToClusterList = cluster(leftClusters, SECONDARY_CLUSTER_NUM, SECONDARY_MAX_ITERATION);
+    
+    List<Cluster> secondaryClusters = new ArrayList<>();
     for (Entry<ClusterSummary, List<Cluster>> entry : centroidToClusterList.entrySet()) {
-      ClusterSummary clusterSummary = entry.getKey();
       List<Cluster> clusterList = entry.getValue();
-      Map<Cluster, Double> distanceMap = new HashMap<>();
 
-      IClusterable clusterCentroid = clusterSummary.getCentroid();
-      IClusterable clusterVariance = clusterSummary.getVariance();
-
+      int listSize = clusterList.size();
+      if (listSize == 0) {
+        continue;
+      }
+      
+      // spoji listu klastera u jedan klaster
+      Cluster secondaryCluster = clusterList.get(0);
+      for (int i = 1; i < listSize; ++i) {
+        Cluster cluster = clusterList.get(i);
+        secondaryCluster.addSubcluster(cluster);
+      }
+      
+      bucketClusters.add(secondaryCluster);
+      secondaryClusters.add(secondaryCluster);
     }
     
+    /*
+    // napravi hijerarhijsko klasteriranje
+    while (true) {
+      double 
+      
+      for (int i = 0; i < secondaryClusters.size(); ++i) {
+        for (int j = i+1; j < secondaryClusters.size(); ++j) {
+          
+        }
+      }
+    }
+    */
     return discardClusters;
   }
 
