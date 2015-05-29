@@ -10,7 +10,7 @@ public class ClusterSummary {
   private IClusterable sum;
 
   private IClusterable sumsq;
-
+  
   private ClusterSummary(int n, IClusterable sum, IClusterable sumsq) {
     super();
     this.n = n;

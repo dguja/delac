@@ -2,7 +2,6 @@ package hr.fer.zemris.composite.cluster.algorithm.bfr;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
-import hr.fer.zemris.composite.cluster.algorithm.simplebfr.Cluster;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
 import hr.fer.zemris.composite.cluster.distance.IDistanceMeasure;
@@ -57,14 +56,15 @@ public class BFR implements IAlgorithm {
 
   @Override
   public List<ICluster> cluster(List<IClusterable> points) {
-    int clusterSize = (int) (points.size() * BUCKET_FRACTION);
+    int numPoints = points.size();
+    int clusterSize = (int) (numPoints * BUCKET_FRACTION);
 
     List<Cluster> clusters = new ArrayList<>();
     List<Cluster> bucketClusters = new ArrayList<>();
 
     int pos = 0;
-    while (pos < points.size()) {
-      while (pos < points.size() && bucketClusters.size() < clusterSize) {
+    while (pos < numPoints) {
+      while (pos < numPoints && bucketClusters.size() < clusterSize) {
         bucketClusters.add(new Cluster(points.get(pos)));
         ++pos;
       }
@@ -79,15 +79,16 @@ public class BFR implements IAlgorithm {
   }
 
   private List<Cluster> clusterBucket(List<Cluster> clusters, List<Cluster> bucketClusters) {
-    // odredi centroide za klasteriranje
-    List<IClusterable> centroids = new ArrayList<>();
-    fillClusterCentroids(centroids, clusters);
-    fillCentroids(centroids, bucketClusters, CLUSTER_NUM);
+    Map<ClusterSummary, List<Cluster>> centroidToClusterList;
+    
+    // napravi pocetno klasteriranje
+    clusters.addAll(bucketClusters);
+    centroidToClusterList = cluster(clusters, CLUSTER_NUM, MAX_ITERATION);
 
-    Map<ClusterSummary, List<Cluster>> centroidToClusterList =
-        cluster(centroids, clusters, CLUSTER_NUM, MAX_ITERATION);
+    List<Cluster> discardClusters = new ArrayList<>();
+    List<Cluster> leftClusters = new ArrayList<>();
 
-    // sortiraj po Mahalanobis udaljenosti
+    // primary compression - sortiraj po Mahalanobis udaljenosti i odbaci najblize
     for (Entry<ClusterSummary, List<Cluster>> entry : centroidToClusterList.entrySet()) {
       ClusterSummary clusterSummary = entry.getKey();
       List<Cluster> clusterList = entry.getValue();
@@ -108,6 +109,7 @@ public class BFR implements IAlgorithm {
         distanceMap.put(cluster, distance);
       }
 
+      // sortiraj
       Collections.sort(clusterList, new Comparator<Cluster>() {
 
         @Override
@@ -116,13 +118,45 @@ public class BFR implements IAlgorithm {
         }
 
       });
+
+      int listSize = clusterList.size();
+      if (listSize == 0) {
+        continue;
+      }
+
+      // izvuci najbolje, spoji ih i odbaci, ostale spoji u jednu hrpu
+      int numDiscarded = Math.max(1, (int) (listSize * DISCARDED_FRACTION));
+      Cluster discardCluster = clusterList.get(0);
+      for (int i = 1; i < listSize; ++i) {
+        Cluster cluster = clusterList.get(i);
+        if (i < numDiscarded) {
+          discardCluster.addSubcluster(cluster);
+        } else {
+          leftClusters.add(cluster);
+        }
+      }
+
+      discardClusters.add(discardCluster);
     }
 
+    // secondary compression phase
+    centroidToClusterList = cluster(leftClusters, SECONDARY_CLUSTER_NUM, SECONDARY_MAX_ITERATION);
+    for (Entry<ClusterSummary, List<Cluster>> entry : centroidToClusterList.entrySet()) {
+      ClusterSummary clusterSummary = entry.getKey();
+      List<Cluster> clusterList = entry.getValue();
+      Map<Cluster, Double> distanceMap = new HashMap<>();
+
+      IClusterable clusterCentroid = clusterSummary.getCentroid();
+      IClusterable clusterVariance = clusterSummary.getVariance();
+
+    }
+    
+    return discardClusters;
   }
 
-  private Map<ClusterSummary, List<Cluster>> cluster(List<IClusterable> centroids,
-      List<Cluster> clusters, int k, int maxIter) {
-    // Map<Cluster, Integer> clusterToCentroid = new HashMap<>();
+  private Map<ClusterSummary, List<Cluster>> cluster(List<Cluster> clusters, int k, int maxIter) {
+    List<IClusterable> centroids = new ArrayList<>();
+    fillCentroids(centroids, clusters, k);
 
     Map<Integer, List<Cluster>> centroidToClusterList = new HashMap<>();
     Map<ClusterSummary, List<Cluster>> summaryToClusterList = new HashMap<>();
@@ -144,7 +178,7 @@ public class BFR implements IAlgorithm {
         }
         clusterList.add(cluster);
         centroidToClusterList.put(closestCentroidIndex, clusterList);
-        // clusterToCentroid.put(cluster, closestCentroidIndex);
+        // novi dio
 
         ClusterSummary newCentroid = newCentroids.get(closestCentroidIndex);
         if (newCentroid == null) {
@@ -182,7 +216,7 @@ public class BFR implements IAlgorithm {
     double distance = Double.MAX_VALUE;
     Integer closestCentroidIndex = null;
 
-    for (int index = 0; index < centroids.size(); ++index) {
+    for (int index = 0, size = centroids.size(); index < size; ++index) {
       double nDistance = distanceMeasure.measure(point, centroids.get(index));
 
       if (nDistance < distance) {
@@ -192,18 +226,6 @@ public class BFR implements IAlgorithm {
     }
 
     return closestCentroidIndex;
-  }
-
-  private void fillClusters(List<Cluster> clusters, List<IClusterable> points) {
-    for (IClusterable point : points) {
-      clusters.add(new Cluster(point));
-    }
-  }
-
-  private void fillClusterCentroids(List<IClusterable> centroids, List<Cluster> clusters) {
-    for (Cluster cluster : clusters) {
-      centroids.add(cluster.getClusterSummary().getCentroid());
-    }
   }
 
   private void fillClusterSummaryCentroids(List<IClusterable> centroids,
