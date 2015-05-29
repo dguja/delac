@@ -63,4 +63,9 @@ public class Distance implements Comparable<Distance> {
     return true;
   }
 
+  @Override
+  public String toString() {
+    return first.toString() + ", " + second.toString() + " --> " +distance.toString();
+  }
+
 }

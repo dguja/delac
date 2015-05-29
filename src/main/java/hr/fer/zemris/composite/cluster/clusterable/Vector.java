@@ -5,11 +5,11 @@ import java.util.Arrays;
 public class Vector implements IClusterable {
 
   private double[] values;
-  
+
   public Vector(int dimension) {
     values = new double[dimension];
   }
-  
+
   public Vector(double[] values) {
     this.values = Arrays.copyOf(values, values.length);
   }
@@ -80,6 +80,20 @@ public class Vector implements IClusterable {
     if (!Arrays.equals(values, other.values))
       return false;
     return true;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("(");
+    for (int i = 0; i < values.length; i++) {
+      sb.append(String.format("%.3f", values[i]));
+      if (i != values.length - 1) {
+        sb.append(", ");
+      }
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
 }

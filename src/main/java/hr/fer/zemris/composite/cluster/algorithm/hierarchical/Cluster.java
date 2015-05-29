@@ -20,7 +20,7 @@ public class Cluster implements ICluster {
 
   public Cluster(IClusterable vector) {
     vectors.add(vector);
-    vectorSum = vector;
+    vectorSum = vector.copy();
     setId();
   }
 
@@ -30,11 +30,11 @@ public class Cluster implements ICluster {
     setId();
   }
 
-  public Cluster(Cluster first, Cluster second){
+  public Cluster(Cluster first, Cluster second) {
     setId();
     vectors.addAll(first.vectors);
     vectors.addAll(second.vectors);
-    vectorSum.add(first.vectorSum);
+    vectorSum = first.vectorSum.copy();
     vectorSum.add(second.vectorSum);
   }
 
@@ -96,6 +96,11 @@ public class Cluster implements ICluster {
   @Override
   public int getN() {
     return vectors.size();
+  }
+
+  @Override
+  public String toString() {
+    return getCentroid().toString();
   }
 
 }
