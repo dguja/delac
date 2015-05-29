@@ -93,4 +93,9 @@ public class Cluster implements ICluster {
     return true;
   }
 
+  @Override
+  public int getN() {
+    return vectors.size();
+  }
+
 }
