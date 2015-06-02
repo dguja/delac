@@ -1,10 +1,13 @@
 package hr.fer.zemris.composite.cluster.algorithm.kmeans;
 
+import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-public class Cluster {
+public class Cluster implements ICluster {
 
   private Set<IClusterable> clusterable;
 
@@ -29,6 +32,12 @@ public class Cluster {
   public void setCentroid(IClusterable centroid) {
     this.centroid = centroid;
   }
+  
+  @Override
+  public List<IClusterable> getPoints() {
+    return new ArrayList<IClusterable>(clusterable);
+  }
+
 
   @Override
   public int hashCode() {
@@ -61,4 +70,10 @@ public class Cluster {
     return true;
   }
 
+  @Override
+  public int getN() {
+    return clusterable.size();
+  }
+
+ 
 }
