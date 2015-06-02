@@ -1,8 +1,12 @@
 package hr.fer.zemris.composite.cluster.algorithm.kmeans;
 
+import hr.fer.zemris.composite.cluster.ICluster;
+import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
+import hr.fer.zemris.composite.cluster.distance.DistanceType;
 import hr.fer.zemris.composite.cluster.distance.IDistanceMeasure;
+import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,19 +17,33 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
-public class KMeans {
+public class KMeans implements IAlgorithm {
 
   private List<IClusterable> clusterable;
 
   private IDistanceMeasure distanceMeasure;
 
-  public KMeans(List<IClusterable> clusterable, IDistanceMeasure distanceMeasure) {
-    this.clusterable = clusterable;
-    this.distanceMeasure = distanceMeasure;
+  private DistanceType distanceType;
+
+  @SuppressWarnings("unused")
+  private QualityType qualityType;
+
+  private int k;
+
+  private int maxIter;
+
+  public KMeans(DistanceType distanceType, QualityType qualityType, int k, int maxIter) {
+    this.distanceType = distanceType;
+    this.distanceMeasure = distanceType.getDistanceMeasure();
+    this.qualityType = qualityType;
+    this.k = k;
+    this.maxIter = maxIter;
   }
 
-  public List<Cluster> run(int k, int maxIter) {
-
+  @Override
+  public List<ICluster> cluster(List<IClusterable> clusterables) {
+    clusterable = new ArrayList<>(clusterables);
+    
     List<IClusterable> centroids = selectInitCentroids(k);
 
     List<Cluster> clusters = createClusters(centroids);
@@ -52,13 +70,24 @@ public class KMeans {
       if (clusters.equals(oldClusters)) {
         break;
       }
-      
+
       oldClusters = clusters;
       clusters = calculateNewCentroids(clusters);
 
     }
 
-    return clusters;
+    return new ArrayList<ICluster>(clusters);
+  }
+
+  @Override
+  public void setDistanceType(DistanceType distanceType) {
+    this.distanceType = distanceType;
+    this.distanceMeasure = this.distanceType.getDistanceMeasure();
+  }
+
+  @Override
+  public void setQualityType(QualityType qualityType) {
+    this.qualityType = qualityType;
   }
 
   private List<IClusterable> selectInitCentroids(int k) {
@@ -66,14 +95,17 @@ public class KMeans {
 
     // odaberi slucajno prvi centroid
     Random rand = new Random();
-    int randIndex = rand.nextInt(clusterable.size());
+
+    int clusterablesCount = clusterable.size();
+    int randIndex = rand.nextInt(clusterablesCount);
     IClusterable first = clusterable.get(randIndex);
     centroids.add(first);
-    
+
     Set<IClusterable> tmpClusterable = new HashSet<>(clusterable);
     tmpClusterable.remove(first);
-    
-    for (int i = 1; i <= k; i++) {
+
+    // granica je k - 1 zato sto je vec jedan centorid dodan
+    for (int i = 0; i < k - 1; ++i) {
 
       Map<IClusterable, Double> clusterableDistance = new HashMap<>();
 
