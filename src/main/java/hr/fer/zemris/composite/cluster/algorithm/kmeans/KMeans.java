@@ -32,13 +32,18 @@ public class KMeans implements IAlgorithm {
 
   private int maxIter;
 
-  public KMeans(int k, int maxIter) {
+  public KMeans(DistanceType distanceType, QualityType qualityType, int k, int maxIter) {
+    this.distanceType = distanceType;
+    this.distanceMeasure = distanceType.getDistanceMeasure();
+    this.qualityType = qualityType;
     this.k = k;
     this.maxIter = maxIter;
   }
 
   @Override
   public List<ICluster> cluster(List<IClusterable> clusterables) {
+    clusterable = new ArrayList<>(clusterables);
+    
     List<IClusterable> centroids = selectInitCentroids(k);
 
     List<Cluster> clusters = createClusters(centroids);
@@ -90,14 +95,17 @@ public class KMeans implements IAlgorithm {
 
     // odaberi slucajno prvi centroid
     Random rand = new Random();
-    int randIndex = rand.nextInt(clusterable.size());
+
+    int clusterablesCount = clusterable.size();
+    int randIndex = rand.nextInt(clusterablesCount);
     IClusterable first = clusterable.get(randIndex);
     centroids.add(first);
 
     Set<IClusterable> tmpClusterable = new HashSet<>(clusterable);
     tmpClusterable.remove(first);
 
-    for (int i = 1; i <= k; i++) {
+    // granica je k - 1 zato sto je vec jedan centorid dodan
+    for (int i = 0; i < k - 1; ++i) {
 
       Map<IClusterable, Double> clusterableDistance = new HashMap<>();
 

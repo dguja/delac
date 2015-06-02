@@ -15,6 +15,7 @@ public class Cluster implements ICluster {
 
   public Cluster(Set<IClusterable> clusterable, IClusterable centroid) {
     this.clusterable = clusterable;
+    this.centroid = centroid;
   }
 
   public Set<IClusterable> getClusterable() {
