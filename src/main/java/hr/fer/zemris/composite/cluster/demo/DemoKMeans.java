@@ -6,6 +6,7 @@ import hr.fer.zemris.composite.cluster.algorithm.kmeans.KMeans;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
+import hr.fer.zemris.composite.cluster.quality.IQualityMeasure;
 import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.io.IOException;
@@ -17,9 +18,12 @@ import java.util.List;
 public class DemoKMeans {
 
   public static void main(String[] args) throws IOException {
-    List<IClusterable> vectors = getVectors("data/test2.txt");
-    IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 4, 300);
+    List<IClusterable> vectors = getVectors("data/dataset.txt");
+    IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
+    IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 6, 300);
     List<ICluster> clusters = algorithm.cluster(vectors);
+    double resultQuality = qualityMeasure.measure(clusters);
+    System.out.println("Quality = " + resultQuality);
     for (ICluster cluster : clusters) {
       System.out.println("Grupa:");
       for (IClusterable vector : cluster.getPoints()) {
