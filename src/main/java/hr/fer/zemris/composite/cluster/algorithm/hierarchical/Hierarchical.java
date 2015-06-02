@@ -17,7 +17,7 @@ import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 public class Hierarchical implements IAlgorithm {
 
-  private int k = 3;
+  private int k = 4;
 
   private IDistanceMeasure distanceMeasure;
 

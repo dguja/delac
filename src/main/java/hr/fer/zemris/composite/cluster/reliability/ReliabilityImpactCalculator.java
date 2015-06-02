@@ -24,6 +24,7 @@ public class ReliabilityImpactCalculator {
     for (Model model : dataset.getModels()) {
       // izracunaj pouzdanost modela prije mijenjanja ulaznih cvorova
       OutputNode outputNode = model.getOutput();
+      outputNode.calculateReliability(DirectionType.PARENT);
       double oldReliability = outputNode.getReliability();
 
       for (int i = 0; i < model.getInputs().size(); ++i) {

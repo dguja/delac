@@ -9,7 +9,6 @@ import hr.fer.zemris.composite.cluster.quality.IQualityMeasure;
 import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,20 +16,20 @@ import java.util.Map.Entry;
 
 public class SimpleBFR implements IAlgorithm {
 
-  private static final int CLUSTER_NUM = 10;
+  private static final int CLUSTER_NUM = 4;
 
   private static final int MAX_ITERATION = 100;
 
-  private static final double BUCKET_FRACTION = 0.1;
+  private static final double BUCKET_FRACTION = 0.6;
 
   private IDistanceMeasure distanceMeasure;
 
   private IQualityMeasure qualityMeasure;
 
-  public SimpleBFR(IDistanceMeasure distanceMeasure, IQualityMeasure qualityMeasure) {
+  public SimpleBFR(DistanceType distanceType, QualityType qualityType) {
     super();
-    this.distanceMeasure = distanceMeasure;
-    this.qualityMeasure = qualityMeasure;
+    setDistanceType(distanceType);
+    setQualityType(qualityType);
   }
 
   @Override
@@ -45,12 +44,21 @@ public class SimpleBFR implements IAlgorithm {
 
   @Override
   public List<ICluster> cluster(List<IClusterable> points) {
+    int numPoints = points.size();
     int clusterSize = (int) (points.size() * BUCKET_FRACTION);
 
     List<Cluster> clusters = new ArrayList<>();
-    for (int i = 0; i < points.size(); i += clusterSize) {
-      clusters =
-          clusterBucket(clusters, points.subList(i, Math.min(points.size(), i + clusterSize)));
+    List<IClusterable> bucketPoints = new ArrayList<>();
+
+    int pos = 0;
+    while (pos < numPoints) {
+      while (pos < numPoints && bucketPoints.size() < clusterSize) {
+        bucketPoints.add(points.get(pos));
+        ++pos;
+      }
+
+      clusters = clusterBucket(clusters, bucketPoints);
+      bucketPoints.clear();
     }
 
     // pretvori u listu IClustera
@@ -70,7 +78,7 @@ public class SimpleBFR implements IAlgorithm {
 
     Map<Cluster, Integer> clusterToCentroid = new HashMap<>();
     for (int iter = 0; iter < MAX_ITERATION; ++iter) {
-      List<ClusterSummary> newCentroids = new ArrayList<>(centroids.size());
+      ClusterSummary[] newCentroids = new ClusterSummary[centroids.size()];
 
       // za svaki klaster odredi najblizi centroid
       for (Cluster cluster : clusters) {
@@ -81,13 +89,13 @@ public class SimpleBFR implements IAlgorithm {
 
         clusterToCentroid.put(cluster, closestCentroidIndex);
 
-        ClusterSummary newCentroid = newCentroids.get(closestCentroidIndex);
+        ClusterSummary newCentroid = newCentroids[closestCentroidIndex];
         if (newCentroid == null) {
           newCentroid = clusterSummary.copy();
         } else {
           newCentroid.addClusterSummary(clusterSummary);
         }
-        newCentroids.set(closestCentroidIndex, newCentroid);
+        newCentroids[closestCentroidIndex] = newCentroid;
       }
 
       // zapamti stare centroide
@@ -97,25 +105,38 @@ public class SimpleBFR implements IAlgorithm {
       centroids.clear();
       fillClusterSummaryCentroids(centroids, newCentroids);
       fillCentroids(centroids, points);
-      
+
       // ako se nije nista promijenilo, prekini
       if (oldCentroids.equals(centroids)) {
         break;
       }
     }
 
+    /*
+     * System.out.println("KONACNI CENTROIDI"); for (IClusterable centroid : centroids) {
+     * System.out.println(centroid); } System.out.println();
+     */
+
     // napravi nove klastere
-    List<Cluster> newClusters = new ArrayList<>(centroids.size()); // ovo treba popraviti
+    Cluster[] newClusters = new Cluster[centroids.size()];
     for (Entry<Cluster, Integer> entry : clusterToCentroid.entrySet()) {
-      Cluster cluster = newClusters.get(entry.getValue());
+      Cluster cluster = newClusters[entry.getValue()];
       if (cluster == null) {
         cluster = entry.getKey();
       } else {
         cluster.addSubcluster(entry.getKey());
       }
-      newClusters.set(entry.getValue(), cluster);
+      newClusters[entry.getValue()] = cluster;
     }
-    return newClusters;
+
+    List<Cluster> listClusters = new ArrayList<>();
+    for (Cluster cluster : newClusters) {
+      if (cluster != null) {
+        listClusters.add(cluster);
+      }
+    }
+
+    return listClusters;
   }
 
   private Integer findClosestCentroidIndex(IClusterable point, List<IClusterable> centroids) {
@@ -123,6 +144,10 @@ public class SimpleBFR implements IAlgorithm {
     Integer closestCentroidIndex = null;
 
     for (int index = 0; index < centroids.size(); ++index) {
+      // if (centroids.get(index) == null) {
+      // continue;
+      // }
+
       double nDistance = distanceMeasure.measure(point, centroids.get(index));
 
       if (nDistance < distance) {
@@ -130,7 +155,7 @@ public class SimpleBFR implements IAlgorithm {
         closestCentroidIndex = index;
       }
     }
- 
+
     return closestCentroidIndex;
   }
 
@@ -147,7 +172,7 @@ public class SimpleBFR implements IAlgorithm {
   }
 
   private void fillClusterSummaryCentroids(List<IClusterable> centroids,
-      List<ClusterSummary> clusterSummaries) {
+      ClusterSummary[] clusterSummaries) {
     for (ClusterSummary clusterSummary : clusterSummaries) {
       if (clusterSummary != null) {
         centroids.add(clusterSummary.getCentroid());
@@ -160,26 +185,35 @@ public class SimpleBFR implements IAlgorithm {
     for (int i = 0; i < fillCount; ++i) {
       Map<IClusterable, Double> pointDistance = new HashMap<>();
 
+//      System.out.println("EVO ME OVDJE....");
       // za svaku tocku odredi minimalnu udaljenost do centroida
       for (IClusterable point : points) {
         double minDistance = Double.MAX_VALUE;
         for (IClusterable centroid : centroids) {
           minDistance = Math.min(minDistance, distanceMeasure.measure(point, centroid));
         }
+//        System.out.println(minDistance);
         pointDistance.put(point, minDistance);
       }
 
       // odredi tocku s maksimalnom udaljenoscu
       IClusterable centroid = null;
 
-      double maxDistance = Double.MIN_VALUE;
+      // System.out.println();
+      double maxDistance = -Double.MAX_VALUE;
       for (Entry<IClusterable, Double> entry : pointDistance.entrySet()) {
+        // System.out.println("EVO ME " + entry.getValue() + " " + maxDistance + " " +
+        // entry.getKey() + " " + Double.MIN_VALUE + " " + Double.MAX_VALUE);
         if (entry.getValue() > maxDistance) {
           centroid = entry.getKey();
           maxDistance = entry.getValue();
         }
       }
 
+//      if (centroid == null) {
+//        System.out.println("PAZI!! " + fillCount + " " + points.size() + " " + maxDistance + " "
+//            + centroids.size());
+//      }
       centroids.add(centroid);
     }
   }

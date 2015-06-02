@@ -18,15 +18,15 @@ import java.util.Map.Entry;
 
 public class BFR implements IAlgorithm {
 
-  private static final int CLUSTER_NUM = 10;
+  private static final int CLUSTER_NUM = 4;// 10;
 
   private static final int MAX_ITERATION = 100;
 
-  private static final double BUCKET_FRACTION = 0.1;
+  private static final double BUCKET_FRACTION = 0.5; // 0.1
 
-  private static final double DISCARDED_FRACTION = 0.2;
+  private static final double DISCARDED_FRACTION = 0.8;// 0.2;
 
-  private static final int SECONDARY_CLUSTER_NUM = 20;
+  private static final int SECONDARY_CLUSTER_NUM = 20;// 20;
 
   private static final int SECONDARY_MAX_ITERATION = 200;
 
@@ -36,10 +36,10 @@ public class BFR implements IAlgorithm {
 
   private IQualityMeasure qualityMeasure;
 
-  public BFR(IDistanceMeasure distanceMeasure, IQualityMeasure qualityMeasure) {
+  public BFR(DistanceType distanceType, QualityType qualityType) {
     super();
-    this.distanceMeasure = distanceMeasure;
-    this.qualityMeasure = qualityMeasure;
+    setDistanceType(distanceType);
+    setQualityType(qualityType);
   }
 
   @Override
@@ -69,7 +69,21 @@ public class BFR implements IAlgorithm {
 
       clusters = clusterBucket(clusters, bucketClusters);
     }
-
+    
+    // preostale klastere iz bucketa pridruži postojećim klasterima
+    clusters.addAll(bucketClusters);
+    Map<ClusterSummary, List<Cluster>> centroidToClusterList = cluster(clusters, CLUSTER_NUM, MAX_ITERATION);
+    
+    clusters.clear();
+    for (Entry<ClusterSummary, List<Cluster>> entry : centroidToClusterList.entrySet()) {
+      Cluster resultCluster = null;
+      for (Cluster cluster : entry.getValue()) {
+        resultCluster = Cluster.merge(resultCluster, cluster);
+      }
+      
+      clusters.add(resultCluster);
+    }
+    
     // pretvori u listu IClustera
     List<ICluster> iClusters = new ArrayList<>();
     iClusters.addAll(clusters);
@@ -78,7 +92,7 @@ public class BFR implements IAlgorithm {
 
   private List<Cluster> clusterBucket(List<Cluster> clusters, List<Cluster> bucketClusters) {
     Map<ClusterSummary, List<Cluster>> centroidToClusterList;
-    
+
     // napravi pocetno klasteriranje
     clusters.addAll(bucketClusters);
     centroidToClusterList = cluster(clusters, CLUSTER_NUM, MAX_ITERATION);
@@ -124,11 +138,11 @@ public class BFR implements IAlgorithm {
 
       // izvuci najbolje, spoji ih i odbaci, ostale spoji u jednu hrpu
       int numDiscarded = Math.max(1, (int) (listSize * DISCARDED_FRACTION));
-      Cluster discardCluster = clusterList.get(0);
-      for (int i = 1; i < listSize; ++i) {
+      Cluster discardCluster = null;
+      for (int i = 0; i < listSize; ++i) {
         Cluster cluster = clusterList.get(i);
         if (i < numDiscarded) {
-          discardCluster.addSubcluster(cluster);
+          discardCluster = Cluster.merge(discardCluster, cluster);
         } else {
           leftClusters.add(cluster);
         }
@@ -137,12 +151,23 @@ public class BFR implements IAlgorithm {
       discardClusters.add(discardCluster);
     }
     
+    /*
+    int sum = 0;
+    for (Cluster cluster : discardClusters) {
+      sum += cluster.getPoints().size();
+    }
+    for (Cluster cluster : leftClusters) {
+      sum += cluster.getPoints().size();
+    }
+    System.out.println("SUMA: " + sum);
+    */
+
     // secondary compression phase
     bucketClusters.clear();
-    
+
     // klasteriraj po vecem broju klastera i iteracija
     centroidToClusterList = cluster(leftClusters, SECONDARY_CLUSTER_NUM, SECONDARY_MAX_ITERATION);
-    
+
     List<Cluster> secondaryClusters = new ArrayList<>();
     for (Entry<ClusterSummary, List<Cluster>> entry : centroidToClusterList.entrySet()) {
       List<Cluster> clusterList = entry.getValue();
@@ -151,30 +176,71 @@ public class BFR implements IAlgorithm {
       if (listSize == 0) {
         continue;
       }
-      
-      // spoji listu klastera u jedan klaster
-      Cluster secondaryCluster = clusterList.get(0);
+
+      // izracunaj varijancu svakog klastera
+      ClusterSummary secondaryClusterSummary = clusterList.get(0).getClusterSummary().copy();
       for (int i = 1; i < listSize; ++i) {
-        Cluster cluster = clusterList.get(i);
-        secondaryCluster.addSubcluster(cluster);
+        secondaryClusterSummary.addClusterSummary(clusterList.get(i).getClusterSummary());
       }
-      
-      bucketClusters.add(secondaryCluster);
-      secondaryClusters.add(secondaryCluster);
-    }
-    
-    /*
-    // napravi hijerarhijsko klasteriranje
-    while (true) {
-      double 
-      
-      for (int i = 0; i < secondaryClusters.size(); ++i) {
-        for (int j = i+1; j < secondaryClusters.size(); ++j) {
-          
+
+      if (secondaryClusterSummary.isDeviationLessThan(COMPRESSED_MAX_DEV)) {
+        // spoji listu klastera u jedan klaster
+        Cluster secondaryCluster = null;
+        for (int i = 0; i < listSize; ++i) {
+          secondaryCluster = Cluster.merge(secondaryCluster, clusterList.get(i));
+        }
+
+        secondaryClusters.add(secondaryCluster);
+      } else {
+        // labave klastere rastaviti i sve dijelove vrati u bucket
+        for (Cluster cluster : clusterList) {
+          bucketClusters.add(cluster);
         }
       }
     }
-    */
+
+    // napravi hijerarhijsko klasteriranje
+    List<Boolean> removed = new ArrayList<>();
+    for (int i = 0; i < secondaryClusters.size(); ++i) {
+      removed.add(Boolean.FALSE);
+    }
+
+    for (int i = 0; i < secondaryClusters.size(); ++i) {
+      if (removed.get(i)) {
+        continue;
+      }
+
+      for (int j = i + 1; j < secondaryClusters.size(); ++j) {
+        if (removed.get(j)) {
+          continue;
+        }
+
+        Cluster cluster1 = secondaryClusters.get(i);
+        Cluster cluster2 = secondaryClusters.get(j);
+
+        ClusterSummary clusterSummary = cluster1.getClusterSummary().copy();
+        clusterSummary.addClusterSummary(cluster2.getClusterSummary());
+
+        if (clusterSummary.isDeviationLessThan(COMPRESSED_MAX_DEV)) {
+          Cluster merged = Cluster.merge(cluster1, cluster2);
+
+          if (merged == cluster2) {
+            secondaryClusters.set(i, merged);
+          }
+          removed.set(j, Boolean.TRUE);
+        }
+      }
+    }
+
+    // popuni bucket s compressed clusterima
+    for (int i = 0; i < secondaryClusters.size(); ++i) {
+      if (removed.get(i)) {
+        continue;
+      }
+
+      bucketClusters.add(secondaryClusters.get(i));
+    }
+
     return discardClusters;
   }
 
@@ -185,7 +251,7 @@ public class BFR implements IAlgorithm {
     Map<Integer, List<Cluster>> centroidToClusterList = new HashMap<>();
     Map<ClusterSummary, List<Cluster>> summaryToClusterList = new HashMap<>();
     for (int iter = 0; iter < maxIter; ++iter) {
-      List<ClusterSummary> newCentroids = new ArrayList<>(centroids.size());
+      ClusterSummary[] newCentroids = new ClusterSummary[centroids.size()];
       centroidToClusterList.clear();
 
       // za svaki klaster odredi najblizi centroid
@@ -204,19 +270,19 @@ public class BFR implements IAlgorithm {
         centroidToClusterList.put(closestCentroidIndex, clusterList);
         // novi dio
 
-        ClusterSummary newCentroid = newCentroids.get(closestCentroidIndex);
+        ClusterSummary newCentroid = newCentroids[closestCentroidIndex];
         if (newCentroid == null) {
           newCentroid = clusterSummary.copy();
         } else {
           newCentroid.addClusterSummary(clusterSummary);
         }
-        newCentroids.set(closestCentroidIndex, newCentroid);
+        newCentroids[closestCentroidIndex] = newCentroid;
       }
 
       // popuni summary
       summaryToClusterList.clear();
       for (Entry<Integer, List<Cluster>> entry : centroidToClusterList.entrySet()) {
-        summaryToClusterList.put(newCentroids.get(entry.getKey()), entry.getValue());
+        summaryToClusterList.put(newCentroids[entry.getKey()], entry.getValue());
       }
 
       // zapamti stare centroide
@@ -253,7 +319,7 @@ public class BFR implements IAlgorithm {
   }
 
   private void fillClusterSummaryCentroids(List<IClusterable> centroids,
-      List<ClusterSummary> clusterSummaries) {
+      ClusterSummary[] clusterSummaries) {
     for (ClusterSummary clusterSummary : clusterSummaries) {
       if (clusterSummary != null) {
         centroids.add(clusterSummary.getCentroid());
@@ -280,7 +346,7 @@ public class BFR implements IAlgorithm {
       // odredi tocku s maksimalnom udaljenoscu
       IClusterable centroid = null;
 
-      double maxDistance = Double.MIN_VALUE;
+      double maxDistance = -Double.MAX_VALUE;
       for (Entry<IClusterable, Double> entry : pointDistance.entrySet()) {
         if (entry.getValue() > maxDistance) {
           centroid = entry.getKey();

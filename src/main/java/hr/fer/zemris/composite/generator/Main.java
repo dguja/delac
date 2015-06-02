@@ -23,7 +23,7 @@ import java.util.List;
 
 public class Main {
 
-  private static String CONFIG_FILE = "conf.json";
+  private static String CONFIG_FILE = "dataset.json";
 
   private static String OUTPUT_DIRECTORY = "other/output/";
 
@@ -44,7 +44,7 @@ public class Main {
   private static final String GRAPH_NAME = "model";
 
   public static void main(final String[] args) throws IOException {
-    final long millis = System.currentTimeMillis();
+    final long millis = 1433259412646L;//System.currentTimeMillis();
     RandomProvider.getRandom().setSeed(millis);
 
     System.err.println("Using generator seed: " + millis + ".");

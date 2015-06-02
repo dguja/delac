@@ -14,20 +14,24 @@ public class ClusterSummary {
   private ClusterSummary(int n, IClusterable sum, IClusterable sumsq) {
     super();
     this.n = n;
-    this.sum = sum;
-    this.sumsq = sumsq;
+    this.sum = sum.copy();
+    this.sumsq = sumsq.copy();
   }
 
   public ClusterSummary(IClusterable point) {
     super();
     n = 1;
-    sum = point;
+    sum = point.copy();
     sumsq = new Vector(point.getDimension());
     for (int i = 0; i < point.getDimension(); ++i) {
       sumsq.set(i, Math.pow(point.get(i), 2));
     }
   }
 
+  public int getN() {
+    return n;
+  }
+  
   public IClusterable getCentroid() {
     return sum.nScalarMultiply(1. / n);
   }
@@ -39,7 +43,18 @@ public class ClusterSummary {
     }
     return variance;
   }
-
+  
+  public boolean isDeviationLessThan(double maxDeviation) {
+    IClusterable variance = getVariance();
+    double maxVariance = maxDeviation*maxDeviation;
+    for (int i = 0, size = variance.getDimension(); i < size; ++i) {
+      if (variance.get(i) > maxVariance) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
   public void addClusterSummary(ClusterSummary other) {
     n += other.n;
     sum.add(other.sum);

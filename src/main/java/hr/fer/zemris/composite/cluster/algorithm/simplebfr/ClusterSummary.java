@@ -11,13 +11,13 @@ public class ClusterSummary {
   private ClusterSummary(int n, IClusterable sum) {
     super();
     this.n = n;
-    this.sum = sum;
+    this.sum = sum.copy();
   }
 
   public ClusterSummary(IClusterable point) {
     super();
     n = 1;
-    sum = point;
+    sum = point.copy();
   }
 
   public IClusterable getCentroid() {

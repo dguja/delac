@@ -32,9 +32,24 @@ public class Cluster implements ICluster {
     return clusterSummary;
   }
 
-  public void addSubcluster(Cluster subcluster) {
-    points.addAll(subcluster.getPoints());
-    clusterSummary.addClusterSummary(subcluster.getClusterSummary());
+  public static Cluster merge(Cluster cluster1, Cluster cluster2) {
+    if (cluster1 == null) {
+      return cluster2;
+    }
+    if (cluster2 == null) {
+      return cluster1;
+    }
+    
+    if (cluster1.clusterSummary.getN() < cluster2.clusterSummary.getN()) {
+      Cluster tmp = cluster1;
+      cluster1 = cluster2;
+      cluster2 = tmp;
+    }
+    
+    cluster1.points.addAll(cluster2.points);
+    cluster1.clusterSummary.addClusterSummary(cluster2.clusterSummary);
+    
+    return cluster1;
   }
 
 }
