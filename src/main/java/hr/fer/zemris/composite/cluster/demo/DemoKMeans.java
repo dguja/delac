@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DemoKMeans {
+  
+  private static final String TEST_FILENAME = "data/dataset.txt";
 
   public static void main(String[] args) throws IOException {
-    List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
+    List<IClusterable> vectors = getVectors(TEST_FILENAME);
     IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
     IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 7, 300);
     List<ICluster> clusters = algorithm.cluster(vectors);
