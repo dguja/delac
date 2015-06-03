@@ -76,7 +76,9 @@ public class LshAlgorithm implements IAlgorithm {
   }
   
   @Override
-  public List<ICluster> cluster(final List<IClusterable> clusterables) {
+  public List<ICluster> cluster(final List<IClusterable> clusterables, int k) {
+    // iskoristiti ucitani k
+    
     final int dimension = clusterables.get(0).getDimension();
     final double diameter = calculateDiameter(clusterables, dimension);
 

@@ -2,7 +2,7 @@ package hr.fer.zemris.composite.cluster.demo;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
-import hr.fer.zemris.composite.cluster.algorithm.bfr.BFR;
+import hr.fer.zemris.composite.cluster.algorithm.simplebfr.SimpleBFR;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
@@ -15,17 +15,16 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class DemoBFR {
-
+public class SimpleBFRDemo {
+  
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
 
     IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
 
-    System.out.println("BFR algoritam");
-    IAlgorithm algorithm = new BFR(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
-    List<ICluster> clusters = algorithm.cluster(vectors);
+    System.out.println("SimpleBFR algoritam");
+    IAlgorithm algorithm = new SimpleBFR(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
+    List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);
     // for (ICluster cluster : clusters) {
@@ -36,12 +35,26 @@ public class DemoBFR {
     // System.out.println();
     // }
 
+    List<IClusterable> retVectors = new ArrayList<>();
     int sum = 0;
     for (ICluster cluster : clusters) {
       sum += cluster.getN();
+      retVectors.addAll(cluster.getPoints());
     }
     
+    System.out.println(calculateHash(retVectors));
+    System.out.println(calculateHash(vectors) == calculateHash(retVectors));
+    
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, clusters.size());
+  }
+  
+  private static int calculateHash(List<IClusterable> points) {
+    int hash = 0;
+    for (IClusterable point : points) {
+      hash += point.hashCode();
+    }
+    
+    return hash;
   }
   
   private static List<IClusterable> getVectors(String filename) throws IOException {

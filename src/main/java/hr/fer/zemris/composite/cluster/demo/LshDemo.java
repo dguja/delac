@@ -26,7 +26,7 @@ public class LshDemo {
     final List<IClusterable> vectors = getVectors(TEST_FILENAME);
     final IAlgorithm algorithm = new LshAlgorithm(DISTANCE_TYPE, QUALITY_TYPE);
 
-    final List<ICluster> clusters = algorithm.cluster(vectors);
+    final List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     System.out.println("k = " + clusters.size() + ", quality = " + QUALITY_TYPE.getQualityMeasure().measure(clusters));
     
     for (final ICluster cluster : clusters) {

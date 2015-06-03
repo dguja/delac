@@ -2,7 +2,10 @@ package hr.fer.zemris.composite.cluster.demo;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
-import hr.fer.zemris.composite.cluster.algorithm.kmeans.KMeans;
+import hr.fer.zemris.composite.cluster.algorithm.bfr.BFR;
+import hr.fer.zemris.composite.cluster.algorithm.hierarchical.Cluster;
+import hr.fer.zemris.composite.cluster.algorithm.hierarchical.Hierarchical;
+import hr.fer.zemris.composite.cluster.algorithm.simplebfr.SimpleBFR;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
@@ -15,29 +18,33 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DemoKMeans {
+public class HierarchicalDemo {
 
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
+
     IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
-    IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 7, 300);
-    List<ICluster> clusters = algorithm.cluster(vectors);
+
+    System.out.println("Hierarchical algoritam");
+    IAlgorithm algorithm = new Hierarchical(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
+    List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);
-//    for (ICluster cluster : clusters) {
-//      System.out.println("Grupa:");
-//      for (IClusterable vector : cluster.getPoints()) {
-//        System.out.println("  " + vector);
-//      }
-//      System.out.println();
-//    }
-    
+    // for (ICluster cluster : clusters) {
+    // System.out.println("Grupa:");
+    // for (IClusterable vector : cluster.getPoints()) {
+    // System.out.println("  " + vector);
+    // }
+    // System.out.println();
+    // }
+
     int sum = 0;
     for (ICluster cluster : clusters) {
       sum += cluster.getN();
     }
-    
+
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, clusters.size());
+
   }
 
   private static List<IClusterable> getVectors(String filename) throws IOException {

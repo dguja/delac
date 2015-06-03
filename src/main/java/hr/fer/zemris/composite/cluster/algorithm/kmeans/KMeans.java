@@ -50,7 +50,9 @@ public class KMeans implements IAlgorithm {
   }
 
   @Override
-  public List<ICluster> cluster(List<IClusterable> clusterables) {
+  public List<ICluster> cluster(List<IClusterable> clusterables, int k) {
+    this.k = k;
+    
     clusterable = new ArrayList<>(clusterables);
 
     List<IClusterable> centroids = selectInitCentroids(k);
