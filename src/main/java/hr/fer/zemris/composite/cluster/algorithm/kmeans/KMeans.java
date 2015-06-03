@@ -32,6 +32,15 @@ public class KMeans implements IAlgorithm {
 
   private int maxIter;
 
+  /**
+   * Konstruktor.
+   * 
+   * @param distanceType odreduje kako ce se racunati udaljenost izmedu objekata koji se
+   *          klasteriraju
+   * @param qualityType odreduje kako se racuna kvaliteta klasteriranja
+   * @param k broj klastera
+   * @param maxIter maksimalan broj iteracija
+   */
   public KMeans(DistanceType distanceType, QualityType qualityType, int k, int maxIter) {
     this.distanceType = distanceType;
     this.distanceMeasure = distanceType.getDistanceMeasure();
@@ -43,7 +52,7 @@ public class KMeans implements IAlgorithm {
   @Override
   public List<ICluster> cluster(List<IClusterable> clusterables) {
     clusterable = new ArrayList<>(clusterables);
-    
+
     List<IClusterable> centroids = selectInitCentroids(k);
 
     List<Cluster> clusters = createClusters(centroids);
@@ -76,7 +85,7 @@ public class KMeans implements IAlgorithm {
 
     }
 
-    return new ArrayList<ICluster>(clusters);
+    return new ArrayList<ICluster>(oldClusters);
   }
 
   @Override
@@ -90,6 +99,12 @@ public class KMeans implements IAlgorithm {
     this.qualityType = qualityType;
   }
 
+  /**
+   * Odabire pocetnih k centroida.
+   * 
+   * @param k broj centroida koji se odabiru
+   * @return lista centroida
+   */
   private List<IClusterable> selectInitCentroids(int k) {
     List<IClusterable> centroids = new ArrayList<>();
 
@@ -149,7 +164,9 @@ public class KMeans implements IAlgorithm {
     List<Cluster> clusters = new ArrayList<>();
 
     for (IClusterable centroid : centroids) {
-      clusters.add(new Cluster(new HashSet<IClusterable>(), centroid));
+      HashSet<IClusterable> set = new HashSet<IClusterable>();
+      set.add(centroid);
+      clusters.add(new Cluster(set, centroid));
     }
 
     return clusters;
@@ -174,6 +191,13 @@ public class KMeans implements IAlgorithm {
     return newClusters;
   }
 
+  /**
+   * Racuna srednju vrijednost po komponentama.
+   * 
+   * @param clusterable objekti izmedu koji se racuna srednja vrijednost
+   * @param dimension dimenzija vektora
+   * @return vektor koji sadrzi srednju vrijednost
+   */
   private double[] calculateAvg(Set<IClusterable> clusterable, int dimension) {
     double[] avg = new double[dimension];
 
