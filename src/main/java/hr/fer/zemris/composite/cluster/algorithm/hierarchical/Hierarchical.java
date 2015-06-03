@@ -17,7 +17,7 @@ import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 public class Hierarchical implements IAlgorithm {
 
-  private int k = 4;
+  private int k;
 
   private IDistanceMeasure distanceMeasure;
 
@@ -30,7 +30,9 @@ public class Hierarchical implements IAlgorithm {
   }
 
   @Override
-  public List<ICluster> cluster(List<IClusterable> vectors) {
+  public List<ICluster> cluster(List<IClusterable> vectors, int k) {
+    this.k = k;
+
     double quality = Double.MAX_VALUE;
     List<ICluster> result = null;
     for (int i = k; i <= k; i++) {

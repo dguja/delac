@@ -25,7 +25,6 @@ public class KMeans implements IAlgorithm {
 
   private DistanceType distanceType;
 
-  @SuppressWarnings("unused")
   private QualityType qualityType;
 
   private int k;
@@ -41,16 +40,17 @@ public class KMeans implements IAlgorithm {
    * @param k broj klastera
    * @param maxIter maksimalan broj iteracija
    */
-  public KMeans(DistanceType distanceType, QualityType qualityType, int k, int maxIter) {
+  public KMeans(DistanceType distanceType, QualityType qualityType, int maxIter) {
     this.distanceType = distanceType;
     this.distanceMeasure = distanceType.getDistanceMeasure();
     this.qualityType = qualityType;
-    this.k = k;
     this.maxIter = maxIter;
   }
 
   @Override
-  public List<ICluster> cluster(List<IClusterable> clusterables) {
+  public List<ICluster> cluster(List<IClusterable> clusterables, int k) {
+    this.k = k;
+
     clusterable = new ArrayList<>(clusterables);
 
     List<IClusterable> centroids = selectInitCentroids(k);
@@ -100,11 +100,42 @@ public class KMeans implements IAlgorithm {
     this.qualityType = qualityType;
   }
 
+  public List<IClusterable> getClusterable() {
+    return clusterable;
+  }
+
+  public IDistanceMeasure getDistanceMeasure() {
+    return distanceMeasure;
+  }
+
+  public DistanceType getDistanceType() {
+    return distanceType;
+  }
+
+  public QualityType getQualityType() {
+    return qualityType;
+  }
+
+  public int getK() {
+    return k;
+  }
+
+  public int getMaxIter() {
+    return maxIter;
+  }
+
+  /**
+   * Govori jesu li dvije liste klastera jednake.
+   * 
+   * @param clusters
+   * @param oldClusters
+   * @return true ako su jednake liste klastera; false inace
+   */
   private boolean isEqual(List<Cluster> clusters, List<Cluster> oldClusters) {
-    if(clusters == null && oldClusters == null) {
+    if (clusters == null && oldClusters == null) {
       return true;
     }
-    if(clusters == null || oldClusters == null) {
+    if (clusters == null || oldClusters == null) {
       return false;
     }
     int hashCode1 = getHashCode(clusters);
@@ -113,6 +144,12 @@ public class KMeans implements IAlgorithm {
     return hashCode1 == hashCode2;
   }
 
+  /**
+   * Racuna hashCode liste klastera.
+   * 
+   * @param clusters lista ciji se hashCode racuna
+   * @return hashCode
+   */
   private int getHashCode(List<Cluster> clusters) {
     int hashCode = 0;
 

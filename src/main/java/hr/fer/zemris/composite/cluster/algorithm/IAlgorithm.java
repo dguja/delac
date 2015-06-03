@@ -13,5 +13,5 @@ public interface IAlgorithm {
 
   void setQualityType(QualityType qualityType);
 
-  List<ICluster> cluster(List<IClusterable> clusterables);
+  List<ICluster> cluster(List<IClusterable> clusterables, int k);
 }

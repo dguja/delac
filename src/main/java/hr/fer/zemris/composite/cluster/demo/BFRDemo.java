@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DemoBFR {
+public class BFRDemo {
 
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
@@ -25,7 +25,7 @@ public class DemoBFR {
 
     System.out.println("BFR algoritam");
     IAlgorithm algorithm = new BFR(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
-    List<ICluster> clusters = algorithm.cluster(vectors);
+    List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);
     // for (ICluster cluster : clusters) {
