@@ -76,7 +76,8 @@ public class KMeans implements IAlgorithm {
 
       }
 
-      if (clusters.equals(oldClusters)) {
+      if (isEqual(clusters, oldClusters)) {
+        System.out.println("Stao u koraku: " + i);
         break;
       }
 
@@ -97,6 +98,31 @@ public class KMeans implements IAlgorithm {
   @Override
   public void setQualityType(QualityType qualityType) {
     this.qualityType = qualityType;
+  }
+
+  private boolean isEqual(List<Cluster> clusters, List<Cluster> oldClusters) {
+    if(clusters == null && oldClusters == null) {
+      return true;
+    }
+    if(clusters == null || oldClusters == null) {
+      return false;
+    }
+    int hashCode1 = getHashCode(clusters);
+    int hashCode2 = getHashCode(oldClusters);
+
+    return hashCode1 == hashCode2;
+  }
+
+  private int getHashCode(List<Cluster> clusters) {
+    int hashCode = 0;
+
+    for (Cluster cluster : clusters) {
+      for (IClusterable clusterable : cluster.getPoints()) {
+        hashCode += clusterable.hashCode();
+      }
+    }
+
+    return hashCode;
   }
 
   /**
@@ -164,7 +190,7 @@ public class KMeans implements IAlgorithm {
     List<Cluster> clusters = new ArrayList<>();
 
     for (IClusterable centroid : centroids) {
-      HashSet<IClusterable> set = new HashSet<IClusterable>();
+      List<IClusterable> set = new ArrayList<IClusterable>();
       set.add(centroid);
       clusters.add(new Cluster(set, centroid));
     }
@@ -184,7 +210,7 @@ public class KMeans implements IAlgorithm {
     for (Cluster cluster : clusters) {
 
       double[] avg = calculateAvg(cluster.getClusterable(), cluster.getCentroid().getDimension());
-      newClusters.add(new Cluster(new HashSet<IClusterable>(), new Vector(avg)));
+      newClusters.add(new Cluster(new ArrayList<IClusterable>(), new Vector(avg)));
 
     }
 
@@ -198,7 +224,7 @@ public class KMeans implements IAlgorithm {
    * @param dimension dimenzija vektora
    * @return vektor koji sadrzi srednju vrijednost
    */
-  private double[] calculateAvg(Set<IClusterable> clusterable, int dimension) {
+  private double[] calculateAvg(List<IClusterable> clusterable, int dimension) {
     double[] avg = new double[dimension];
 
     for (IClusterable point : clusterable) {

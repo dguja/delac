@@ -5,24 +5,23 @@ import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class Cluster implements ICluster {
 
-  private Set<IClusterable> clusterable;
+  private List<IClusterable> clusterable;
 
   private IClusterable centroid;
 
-  public Cluster(Set<IClusterable> clusterable, IClusterable centroid) {
+  public Cluster(List<IClusterable> clusterable, IClusterable centroid) {
     this.clusterable = clusterable;
     this.centroid = centroid;
   }
 
-  public Set<IClusterable> getClusterable() {
+  public List<IClusterable> getClusterable() {
     return clusterable;
   }
 
-  public void setClusterable(Set<IClusterable> clusterable) {
+  public void setClusterable(List<IClusterable> clusterable) {
     this.clusterable = clusterable;
   }
 

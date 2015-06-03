@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DemoKMeans {
   
-  private static final String TEST_FILENAME = "data/dataset.txt";
+  private static final String TEST_FILENAME = "data/texture.txt";
 
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(TEST_FILENAME);
@@ -38,7 +38,7 @@ public class DemoKMeans {
     for (ICluster cluster : clusters) {
       sum += cluster.getN();
     }
-    
+
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, clusters.size());
   }
 
