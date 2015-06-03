@@ -22,7 +22,7 @@ public class KMeansDemo {
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(TEST_FILENAME);
     IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
-    IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 300);
+    IAlgorithm algorithm = new KMeans(DistanceType.NORMED_EUCLID, QualityType.SQUARED_DIST_SUM, 300);
     List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);

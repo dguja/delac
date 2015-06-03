@@ -22,8 +22,8 @@ public class NormedEuclid {
       }
       sum += Math.pow(vector1.get(i) - vector2.get(i), 2);
     }
-
-    return sum / (section / union);
+    
+    return sum / (section / (double) union);
   }
 
 }
