@@ -18,13 +18,13 @@ import java.util.Map.Entry;
 
 public class BFR implements IAlgorithm {
 
-  private static final int CLUSTER_NUM = 4;// 10;
+  private static final int CLUSTER_NUM = 11;// 10;
 
   private static final int MAX_ITERATION = 100;
 
-  private static final double BUCKET_FRACTION = 0.5; // 0.1
+  private static final double BUCKET_FRACTION = 1; // 0.1
 
-  private static final double DISCARDED_FRACTION = 0.8;// 0.2;
+  private static final double DISCARDED_FRACTION = 0.95;// 0.2;
 
   private static final int SECONDARY_CLUSTER_NUM = 20;// 20;
 
@@ -85,9 +85,7 @@ public class BFR implements IAlgorithm {
     }
     
     // pretvori u listu IClustera
-    List<ICluster> iClusters = new ArrayList<>();
-    iClusters.addAll(clusters);
-    return iClusters;
+    return new ArrayList<ICluster>(clusters);
   }
 
   private List<Cluster> clusterBucket(List<Cluster> clusters, List<Cluster> bucketClusters) {

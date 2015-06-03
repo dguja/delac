@@ -16,11 +16,11 @@ import java.util.Map.Entry;
 
 public class SimpleBFR implements IAlgorithm {
 
-  private static final int CLUSTER_NUM = 4;
+  private static final int CLUSTER_NUM = 7;
 
-  private static final int MAX_ITERATION = 100;
+  private static final int MAX_ITERATION = 300;
 
-  private static final double BUCKET_FRACTION = 0.6;
+  private static final double BUCKET_FRACTION = 1;
 
   private IDistanceMeasure distanceMeasure;
 
@@ -62,9 +62,7 @@ public class SimpleBFR implements IAlgorithm {
     }
 
     // pretvori u listu IClustera
-    List<ICluster> iClusters = new ArrayList<>();
-    iClusters.addAll(clusters);
-    return iClusters;
+    return new ArrayList<ICluster>(clusters);
   }
 
   private List<Cluster> clusterBucket(List<Cluster> clusters, List<IClusterable> points) {

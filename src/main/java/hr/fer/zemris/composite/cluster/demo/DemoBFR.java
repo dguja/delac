@@ -2,7 +2,7 @@ package hr.fer.zemris.composite.cluster.demo;
 
 import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
-import hr.fer.zemris.composite.cluster.algorithm.kmeans.KMeans;
+import hr.fer.zemris.composite.cluster.algorithm.bfr.BFR;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
@@ -15,23 +15,27 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DemoKMeans {
+
+public class DemoBFR {
 
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
+
     IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
-    IAlgorithm algorithm = new KMeans(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM, 7, 300);
+
+    System.out.println("BFR algoritam");
+    IAlgorithm algorithm = new BFR(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
     List<ICluster> clusters = algorithm.cluster(vectors);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);
-//    for (ICluster cluster : clusters) {
-//      System.out.println("Grupa:");
-//      for (IClusterable vector : cluster.getPoints()) {
-//        System.out.println("  " + vector);
-//      }
-//      System.out.println();
-//    }
-    
+    // for (ICluster cluster : clusters) {
+    // System.out.println("Grupa:");
+    // for (IClusterable vector : cluster.getPoints()) {
+    // System.out.println("  " + vector);
+    // }
+    // System.out.println();
+    // }
+
     int sum = 0;
     for (ICluster cluster : clusters) {
       sum += cluster.getN();
@@ -39,7 +43,7 @@ public class DemoKMeans {
     
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, clusters.size());
   }
-
+  
   private static List<IClusterable> getVectors(String filename) throws IOException {
     List<String> lines = Files.readAllLines(Paths.get(filename));
     List<IClusterable> vectors = new ArrayList<>();
