@@ -44,7 +44,7 @@ public class RealDemo {
 
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, newClusters.size());
     
-    IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
+    IQualityMeasure qualityMeasure = Constants.QUALITY_TYPE.getQualityMeasure();
 
     double resultQuality = qualityMeasure.measure(newClusters);
     System.out.println("Quality = " + resultQuality);

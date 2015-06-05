@@ -23,10 +23,10 @@ public class HierarchicalDemo {
   public static void main(String[] args) throws IOException {
     List<IClusterable> vectors = getVectors(Constants.TEST + ".txt");
 
-    IQualityMeasure qualityMeasure = QualityType.SQUARED_DIST_SUM.getQualityMeasure();
+    IQualityMeasure qualityMeasure = Constants.QUALITY_TYPE.getQualityMeasure();
 
     System.out.println("Hierarchical algoritam");
-    IAlgorithm algorithm = new Hierarchical(DistanceType.EUCLID, QualityType.SQUARED_DIST_SUM);
+    IAlgorithm algorithm = new Hierarchical(Constants.DISTANCE_TYPE, Constants.QUALITY_TYPE);
     List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
     double resultQuality = qualityMeasure.measure(clusters);
     System.out.println("Quality = " + resultQuality);
