@@ -14,20 +14,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LshDemo {
-  
-  private static final DistanceType DISTANCE_TYPE = DistanceType.EUCLID;
+import org.apache.commons.math3.optimization.general.ConjugateGradientFormula;
 
-  private static final QualityType QUALITY_TYPE = QualityType.SQUARED_DIST_SUM;
+public class LshDemo {
 
   private static final String TEST_FILENAME = "data/test.txt";
 
   public static void main(final String[] args) throws IOException {
     final List<IClusterable> vectors = getVectors(TEST_FILENAME);
-    final IAlgorithm algorithm = new LshAlgorithm(DISTANCE_TYPE, QUALITY_TYPE);
+    final IAlgorithm algorithm = new LshAlgorithm(Constants.DISTANCE_TYPE, Constants.QUALITY_TYPE);
 
     final List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
-    System.out.println("k = " + clusters.size() + ", quality = " + QUALITY_TYPE.getQualityMeasure().measure(clusters));
+    System.out.println("k = " + clusters.size() + ", quality = " + Constants.QUALITY_TYPE.getQualityMeasure().measure(clusters));
     
     for (final ICluster cluster : clusters) {
       System.out.println("Grupa:");
