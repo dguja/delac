@@ -5,8 +5,6 @@ import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
 import hr.fer.zemris.composite.cluster.algorithm.lsh.LshAlgorithm;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
-import hr.fer.zemris.composite.cluster.distance.DistanceType;
-import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,18 +14,13 @@ import java.util.List;
 
 public class LshDemo {
 
-  private static final DistanceType DISTANCE_TYPE = DistanceType.EUCLID;
-
-  private static final QualityType QUALITY_TYPE = QualityType.SQUARED_DIST_SUM;
-
-  private static final String TEST_FILENAME = "data/texture.txt";
-
   public static void main(final String[] args) throws IOException {
-    final List<IClusterable> vectors = getVectors(TEST_FILENAME);
-    final IAlgorithm algorithm = new LshAlgorithm(DISTANCE_TYPE, QUALITY_TYPE);
+    final List<IClusterable> vectors = getVectors(Constants.TEST);
+    final IAlgorithm algorithm = new LshAlgorithm(Constants.DISTANCE_TYPE, Constants.QUALITY_TYPE);
 
-    final List<ICluster> clusters = algorithm.cluster(vectors);
-    System.out.println("k = " + clusters.size() + ", q = " + QUALITY_TYPE.getQualityMeasure().measure(clusters));
+    final List<ICluster> clusters = algorithm.cluster(vectors, Constants.CLUSTER_NUM);
+    System.out.println("k = " + clusters.size() + ", q = "
+        + Constants.QUALITY_TYPE.getQualityMeasure().measure(clusters));
 
     // for (final ICluster cluster : clusters) {
     // System.out.println("Grupa:");

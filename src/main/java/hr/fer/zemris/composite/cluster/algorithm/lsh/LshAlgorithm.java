@@ -53,9 +53,6 @@ public class LshAlgorithm implements IAlgorithm {
    * Number of repetitions for best parameter.
    */
   private static final int TEST_COUNT = 100;
-  
-  // TODO remove this
-  private static final int CLUSTER_COUNT = 11;
 
   private ICalculatorProducer producer;
 
@@ -90,7 +87,9 @@ public class LshAlgorithm implements IAlgorithm {
   }
 
   @Override
-  public List<ICluster> cluster(final List<IClusterable> clusterables) {
+  public List<ICluster> cluster(final List<IClusterable> clusterables, final int k) {
+    // iskoristiti ucitani k
+    
     final int dimension = clusterables.get(0).getDimension();
     final double diameter = calculateDiameter(clusterables, dimension);
     
@@ -100,7 +99,7 @@ public class LshAlgorithm implements IAlgorithm {
     for (int i = 0; i < ITERATION_COUNT; i++) {
       final double middle = (leftBound + rightBound) / 2;
 
-      int size = CLUSTER_COUNT + 1;
+      int size = k + 1;
 
       for (int j = 0; j < REPETITION_COUNT; j++) {
         final List<ICluster> result = clusterFixed(clusterables, middle);
@@ -108,12 +107,12 @@ public class LshAlgorithm implements IAlgorithm {
 
         System.out.printf("p = %.3f, k = %2d\n", middle, size);
         
-        if (size <= CLUSTER_COUNT) {
+        if (size <= k) {
           break;
         }
       }
 
-      if (size > CLUSTER_COUNT) {
+      if (size > k) {
         leftBound = middle;
       } else {
         rightBound = middle;
@@ -128,7 +127,7 @@ public class LshAlgorithm implements IAlgorithm {
 
       System.out.printf("k = %2d", current.size());
 
-      if (current.size() == CLUSTER_COUNT) {
+      if (current.size() == k) {
         final double currentQuality = qualityMeasure.measure(current);
 
         System.out.printf(", q = %.3f", currentQuality);

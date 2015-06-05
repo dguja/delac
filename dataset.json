@@ -7,7 +7,7 @@
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v" : [10],
+					"v" : [3],
 					"p" : [1]
 				}
 			}
@@ -17,7 +17,7 @@
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v" : [10],
+					"v" : [3],
 					"p" : [1]
 				}
 			}

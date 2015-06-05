@@ -25,7 +25,6 @@ public class KMeans implements IAlgorithm {
 
   private DistanceType distanceType;
 
-  @SuppressWarnings("unused")
   private QualityType qualityType;
 
   private int k;
@@ -41,16 +40,17 @@ public class KMeans implements IAlgorithm {
    * @param k broj klastera
    * @param maxIter maksimalan broj iteracija
    */
-  public KMeans(DistanceType distanceType, QualityType qualityType, int k, int maxIter) {
+  public KMeans(DistanceType distanceType, QualityType qualityType, int maxIter) {
     this.distanceType = distanceType;
     this.distanceMeasure = distanceType.getDistanceMeasure();
     this.qualityType = qualityType;
-    this.k = k;
     this.maxIter = maxIter;
   }
 
   @Override
-  public List<ICluster> cluster(List<IClusterable> clusterables) {
+  public List<ICluster> cluster(List<IClusterable> clusterables, int k) {
+    this.k = k;
+
     clusterable = new ArrayList<>(clusterables);
 
     List<IClusterable> centroids = selectInitCentroids(k);
@@ -76,7 +76,8 @@ public class KMeans implements IAlgorithm {
 
       }
 
-      if (clusters.equals(oldClusters)) {
+      if (isEqual(clusters, oldClusters)) {
+        System.out.println("Stao u koraku: " + i);
         break;
       }
 
@@ -97,6 +98,68 @@ public class KMeans implements IAlgorithm {
   @Override
   public void setQualityType(QualityType qualityType) {
     this.qualityType = qualityType;
+  }
+
+  public List<IClusterable> getClusterable() {
+    return clusterable;
+  }
+
+  public IDistanceMeasure getDistanceMeasure() {
+    return distanceMeasure;
+  }
+
+  public DistanceType getDistanceType() {
+    return distanceType;
+  }
+
+  public QualityType getQualityType() {
+    return qualityType;
+  }
+
+  public int getK() {
+    return k;
+  }
+
+  public int getMaxIter() {
+    return maxIter;
+  }
+
+  /**
+   * Govori jesu li dvije liste klastera jednake.
+   * 
+   * @param clusters
+   * @param oldClusters
+   * @return true ako su jednake liste klastera; false inace
+   */
+  private boolean isEqual(List<Cluster> clusters, List<Cluster> oldClusters) {
+    if (clusters == null && oldClusters == null) {
+      return true;
+    }
+    if (clusters == null || oldClusters == null) {
+      return false;
+    }
+    int hashCode1 = getHashCode(clusters);
+    int hashCode2 = getHashCode(oldClusters);
+
+    return hashCode1 == hashCode2;
+  }
+
+  /**
+   * Racuna hashCode liste klastera.
+   * 
+   * @param clusters lista ciji se hashCode racuna
+   * @return hashCode
+   */
+  private int getHashCode(List<Cluster> clusters) {
+    int hashCode = 0;
+
+    for (Cluster cluster : clusters) {
+      for (IClusterable clusterable : cluster.getPoints()) {
+        hashCode += clusterable.hashCode();
+      }
+    }
+
+    return hashCode;
   }
 
   /**
@@ -164,7 +227,7 @@ public class KMeans implements IAlgorithm {
     List<Cluster> clusters = new ArrayList<>();
 
     for (IClusterable centroid : centroids) {
-      HashSet<IClusterable> set = new HashSet<IClusterable>();
+      List<IClusterable> set = new ArrayList<IClusterable>();
       set.add(centroid);
       clusters.add(new Cluster(set, centroid));
     }
@@ -184,7 +247,7 @@ public class KMeans implements IAlgorithm {
     for (Cluster cluster : clusters) {
 
       double[] avg = calculateAvg(cluster.getClusterable(), cluster.getCentroid().getDimension());
-      newClusters.add(new Cluster(new HashSet<IClusterable>(), new Vector(avg)));
+      newClusters.add(new Cluster(new ArrayList<IClusterable>(), new Vector(avg)));
 
     }
 
@@ -198,7 +261,7 @@ public class KMeans implements IAlgorithm {
    * @param dimension dimenzija vektora
    * @return vektor koji sadrzi srednju vrijednost
    */
-  private double[] calculateAvg(Set<IClusterable> clusterable, int dimension) {
+  private double[] calculateAvg(List<IClusterable> clusterable, int dimension) {
     double[] avg = new double[dimension];
 
     for (IClusterable point : clusterable) {
