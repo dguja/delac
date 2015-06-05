@@ -5,9 +5,7 @@ import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
 import hr.fer.zemris.composite.cluster.algorithm.kmeans.KMeans;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
-import hr.fer.zemris.composite.cluster.distance.DistanceType;
 import hr.fer.zemris.composite.cluster.quality.IQualityMeasure;
-import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.io.IOException;
 import java.nio.file.Files;
