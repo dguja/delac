@@ -4,8 +4,10 @@ import hr.fer.zemris.composite.cluster.ICluster;
 import hr.fer.zemris.composite.cluster.algorithm.IAlgorithm;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
 import hr.fer.zemris.composite.cluster.clusterable.Vector;
+import hr.fer.zemris.composite.cluster.demo.Constants;
 import hr.fer.zemris.composite.cluster.distance.DistanceType;
 import hr.fer.zemris.composite.cluster.distance.IDistanceMeasure;
+import hr.fer.zemris.composite.cluster.quality.IQualityMeasure;
 import hr.fer.zemris.composite.cluster.quality.QualityType;
 
 import java.util.ArrayList;
@@ -77,7 +79,7 @@ public class KMeans implements IAlgorithm {
       }
 
       if (isEqual(clusters, oldClusters)) {
-        System.out.println("Stao u koraku: " + i);
+//        System.out.println("Stao u koraku: " + i);
         break;
       }
 
@@ -88,6 +90,32 @@ public class KMeans implements IAlgorithm {
 
     return new ArrayList<ICluster>(oldClusters);
   }
+  
+//  public static int calulateOptimalK(DistanceType distanceType, QualityType qualityType, List<IClusterable> clusterables) {
+//    final int maxIter = 100;
+//    KMeans algoKMeans = new KMeans(distanceType, qualityType, maxIter);
+//    IQualityMeasure qualityMeasure = qualityType.getQualityMeasure();
+//    
+//    int k = 1;
+//   double old = 0;
+//    while(true) {
+//      
+//      List<ICluster> clusters = algoKMeans.cluster(clusterables, k);
+//      double resultQuality = qualityMeasure.measure(clusters);
+//      
+//      System.out.println("k: " + k + " kvaliteta: " +resultQuality + " interval: " + Math.abs(old-resultQuality));
+//      
+//      old = resultQuality;
+//      
+//      
+//      k *= 2;
+//      
+//      if(k > 32) break;
+//    }
+//    
+//    
+//    return k;
+//  }
 
   @Override
   public void setDistanceType(DistanceType distanceType) {

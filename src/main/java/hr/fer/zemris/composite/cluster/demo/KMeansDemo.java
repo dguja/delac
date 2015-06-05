@@ -40,6 +40,9 @@ public class KMeansDemo {
     }
 
     System.out.printf("BROJ TOCAKA: %d, BROJ KLASTERA: %d\n", sum, clusters.size());
+
+//    KMeans.calulateOptimalK(DistanceType.NORMED_EUCLID, QualityType.SQUARED_DIST_SUM, vectors);
+  
   }
 
   private static List<IClusterable> getVectors(String filename) throws IOException {
