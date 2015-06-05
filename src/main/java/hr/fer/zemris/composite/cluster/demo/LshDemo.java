@@ -15,31 +15,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LshDemo {
-  
+
   private static final DistanceType DISTANCE_TYPE = DistanceType.EUCLID;
 
   private static final QualityType QUALITY_TYPE = QualityType.SQUARED_DIST_SUM;
 
-  private static final String TEST_FILENAME = "data/test.txt";
+  private static final String TEST_FILENAME = "data/texture.txt";
 
   public static void main(final String[] args) throws IOException {
     final List<IClusterable> vectors = getVectors(TEST_FILENAME);
     final IAlgorithm algorithm = new LshAlgorithm(DISTANCE_TYPE, QUALITY_TYPE);
 
     final List<ICluster> clusters = algorithm.cluster(vectors);
-    System.out.println("k = " + clusters.size() + ", quality = " + QUALITY_TYPE.getQualityMeasure().measure(clusters));
-    
-    for (final ICluster cluster : clusters) {
-      System.out.println("Grupa:");
+    System.out.println("k = " + clusters.size() + ", q = " + QUALITY_TYPE.getQualityMeasure().measure(clusters));
 
-      for (final IClusterable vector : cluster.getPoints()) {
-        System.out.println("  " + vector);
-      }
-
-      System.out.println();
-    }
+    // for (final ICluster cluster : clusters) {
+    // System.out.println("Grupa:");
+    //
+    // for (final IClusterable vector : cluster.getPoints()) {
+    // System.out.println("  " + vector);
+    // }
+    //
+    // System.out.println();
+    // }
   }
-  
+
   private static List<IClusterable> getVectors(final String filename) throws IOException {
     final List<String> lines = Files.readAllLines(Paths.get(filename));
     final List<IClusterable> vectors = new ArrayList<>();
