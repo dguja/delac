@@ -3,7 +3,6 @@ package hr.fer.zemris.composite.cluster.algorithm.lsh.calculators;
 import hr.fer.zemris.composite.cluster.algorithm.lsh.IHashCalculator;
 import hr.fer.zemris.composite.cluster.algorithm.lsh.Signature;
 import hr.fer.zemris.composite.cluster.clusterable.IClusterable;
-import hr.fer.zemris.composite.generator.random.RandomProvider;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,12 +13,12 @@ public class EuclideanCalculator implements IHashCalculator {
 
   private final LineFunction[] functions;
   
-  public EuclideanCalculator(final int functionCount, final int dimension, final double spacing) {
+  public EuclideanCalculator(final int functionCount, final int dimension, final double spacing, final Random random) {
     super();
     
     functions = new LineFunction[functionCount];
     for (int i = 0; i < functionCount; i++) {
-      functions[i] = new LineFunction(dimension, spacing);
+      functions[i] = new LineFunction(dimension, spacing, random);
     }
   }
   
@@ -41,9 +40,9 @@ public class EuclideanCalculator implements IHashCalculator {
     
     private final double kM;
     
-    public LineFunction(final int dimension, final double spacing) {
-      final Random random = RandomProvider.getRandom();
-
+    private final double tS;
+    
+    public LineFunction(final int dimension, final double spacing, final Random random) {
       k = new double[dimension];
       double kSum = 0;
 
@@ -53,6 +52,7 @@ public class EuclideanCalculator implements IHashCalculator {
       }
       
       kM = Math.sqrt(kSum) * spacing;
+      tS = random.nextDouble();
     }
 
     public int hash(final IClusterable clusterable) {
@@ -61,7 +61,7 @@ public class EuclideanCalculator implements IHashCalculator {
         product += k[i] * clusterable.get(i);
       }
 
-      return (int) (product / kM);
+      return (int) (product / kM - tS);
     }
     
   }
