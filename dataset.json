@@ -1,5 +1,5 @@
 {
-	"modelCount": 100,
+	"modelCount": 50000,
 	"copyInputs": true,
 	"discreteDistributions": [
 		{
@@ -7,7 +7,7 @@
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v" : [3],
+					"v" : [5],
 					"p" : [1]
 				}
 			}
@@ -17,7 +17,7 @@
 			"distribution": {
 				"type": "enumerated",
 				"parameters": {
-					"v" : [3],
+					"v" : [5],
 					"p" : [1]
 				}
 			}
@@ -25,10 +25,11 @@
 		{
 			"name": "levelCount",
 			"distribution": {
+				
 				"type": "binomial",
-				"range": [2, 10],
+				"range": [2, 20],
 				"parameters": {
-					"n" : 10,
+					"n" : 20,
 					"p" : 0.5
 				}
 			}
@@ -40,7 +41,7 @@
 				"range": [1, 10],
 				"parameters": {
 					"n" : 10,
-					"p" : 0.5
+					"p" : 0.7
 				}
 			}
 		},
@@ -60,7 +61,7 @@
 				"type": "enumerated",
 				"parameters": {
 					"v" : [1, 2],
-					"p" : [1.0, 0.0]
+					"p" : [0.0, 1.0]
 				}
 			}
 		},
@@ -68,9 +69,9 @@
 			"name": "targetLevel",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 20],
 				"parameters": {
-					"p" : 0.2
+					"p" : 0.1
 				}
 			}
 		},
@@ -80,7 +81,7 @@
 				"type": "enumerated",
 				"parameters": {
 					"v" : [1, 2, 3, 4],
-					"p" : [0.15, 0.6, 0.15, 0.1]
+					"p" : [0.15, 0.7, 0.15, 0.05]
 				}
 			}
 		},
@@ -99,7 +100,7 @@
 			"name": "childCount_0",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 2],
 				"parameters": {
 					"p" : 0.9
 				}
@@ -109,7 +110,7 @@
 			"name": "childCount_1",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 2],
 				"parameters": {
 					"p" : 0.9
 				}
@@ -119,7 +120,7 @@
 			"name": "childCount_2",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 2],
 				"parameters": {
 					"p" : 0.9
 				}
@@ -129,7 +130,7 @@
 			"name": "childCount_3",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 2],
 				"parameters": {
 					"p" : 0.9
 				}
@@ -139,7 +140,7 @@
 			"name": "childCount_4",
 			"distribution": {
 				"type": "geometric",
-				"range": [1, 10],
+				"range": [1, 2],
 				"parameters": {
 					"p" : 0.9
 				}
