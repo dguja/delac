@@ -78,8 +78,11 @@ public class KMeans implements IAlgorithm {
 
       }
 
-      if (isEqual(clusters, oldClusters)) {
-//        System.out.println("Stao u koraku: " + i);
+      // mozes usporediti ovako jer kada se dodaju uzorci u klastere onda se uvijek istim
+      // redoslijedom dodavaju pa ukoliko su isti klasteri onda ce istim redoslijedom biti dodavani
+      // uzorci u njih
+      if (clusters.equals(oldClusters)) {
+        System.out.println("Postignuta konvergencija u koraku: " + i);
         break;
       }
 
@@ -90,32 +93,34 @@ public class KMeans implements IAlgorithm {
 
     return new ArrayList<ICluster>(oldClusters);
   }
-  
-//  public static int calulateOptimalK(DistanceType distanceType, QualityType qualityType, List<IClusterable> clusterables) {
-//    final int maxIter = 100;
-//    KMeans algoKMeans = new KMeans(distanceType, qualityType, maxIter);
-//    IQualityMeasure qualityMeasure = qualityType.getQualityMeasure();
-//    
-//    int k = 1;
-//   double old = 0;
-//    while(true) {
-//      
-//      List<ICluster> clusters = algoKMeans.cluster(clusterables, k);
-//      double resultQuality = qualityMeasure.measure(clusters);
-//      
-//      System.out.println("k: " + k + " kvaliteta: " +resultQuality + " interval: " + Math.abs(old-resultQuality));
-//      
-//      old = resultQuality;
-//      
-//      
-//      k *= 2;
-//      
-//      if(k > 32) break;
-//    }
-//    
-//    
-//    return k;
-//  }
+
+  // public static int calulateOptimalK(DistanceType distanceType, QualityType qualityType,
+  // List<IClusterable> clusterables) {
+  // final int maxIter = 100;
+  // KMeans algoKMeans = new KMeans(distanceType, qualityType, maxIter);
+  // IQualityMeasure qualityMeasure = qualityType.getQualityMeasure();
+  //
+  // int k = 1;
+  // double old = 0;
+  // while(true) {
+  //
+  // List<ICluster> clusters = algoKMeans.cluster(clusterables, k);
+  // double resultQuality = qualityMeasure.measure(clusters);
+  //
+  // System.out.println("k: " + k + " kvaliteta: " +resultQuality + " interval: " +
+  // Math.abs(old-resultQuality));
+  //
+  // old = resultQuality;
+  //
+  //
+  // k *= 2;
+  //
+  // if(k > 32) break;
+  // }
+  //
+  //
+  // return k;
+  // }
 
   @Override
   public void setDistanceType(DistanceType distanceType) {
