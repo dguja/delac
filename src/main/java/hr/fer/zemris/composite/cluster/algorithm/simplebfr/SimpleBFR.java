@@ -108,6 +108,7 @@ public class SimpleBFR implements IAlgorithm {
 
       // ako se nije nista promijenilo, prekini
       if (oldCentroids.equals(centroids)) {
+        System.out.printf("ITERACIJA %d\n", iter+1);
         break;
       }
     }

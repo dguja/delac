@@ -18,15 +18,15 @@ import java.util.Map.Entry;
 
 public class BFR implements IAlgorithm {
 
-  private static final int MAX_ITERATION = 100;
+  private static final int MAX_ITERATION = 300;
 
-  private static final double BUCKET_FRACTION = 1; // 0.1
+  private static final double BUCKET_FRACTION = 0.1; // 0.1
 
-  private static final double DISCARDED_FRACTION = 0.95;// 0.2;
+  private static final double DISCARDED_FRACTION = 0.9;// 0.2;
 
-  private static final int SECONDARY_MAX_ITERATION = 200;
+  private static final int SECONDARY_MAX_ITERATION = 500;
 
-  private static final double COMPRESSED_MAX_DEV = 1.3;
+  private static final double COMPRESSED_MAX_DEV = 0.01;
 
   // broj klastera
   private int clusterNum;
@@ -294,6 +294,7 @@ public class BFR implements IAlgorithm {
 
       // ako se nije nista promijenilo, prekini
       if (oldCentroids.equals(centroids)) {
+        System.out.printf("ITERACIJA %d %d\n", iter+1, maxIter);
         break;
       }
     }
