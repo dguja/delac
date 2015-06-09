@@ -68,7 +68,7 @@ public class KMeans implements IAlgorithm {
 
         for (Cluster cluster : clusters) {
           double tmpDistance = distanceMeasure.measure(cluster.getCentroid(), point);
-          if (tmpDistance < distance) {
+          if (tmpDistance <= distance) {
             distance = tmpDistance;
             tmpCluster = cluster;
           }
@@ -93,34 +93,6 @@ public class KMeans implements IAlgorithm {
 
     return new ArrayList<ICluster>(oldClusters);
   }
-
-  // public static int calulateOptimalK(DistanceType distanceType, QualityType qualityType,
-  // List<IClusterable> clusterables) {
-  // final int maxIter = 100;
-  // KMeans algoKMeans = new KMeans(distanceType, qualityType, maxIter);
-  // IQualityMeasure qualityMeasure = qualityType.getQualityMeasure();
-  //
-  // int k = 1;
-  // double old = 0;
-  // while(true) {
-  //
-  // List<ICluster> clusters = algoKMeans.cluster(clusterables, k);
-  // double resultQuality = qualityMeasure.measure(clusters);
-  //
-  // System.out.println("k: " + k + " kvaliteta: " +resultQuality + " interval: " +
-  // Math.abs(old-resultQuality));
-  //
-  // old = resultQuality;
-  //
-  //
-  // k *= 2;
-  //
-  // if(k > 32) break;
-  // }
-  //
-  //
-  // return k;
-  // }
 
   @Override
   public void setDistanceType(DistanceType distanceType) {
