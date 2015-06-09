@@ -63,7 +63,8 @@ public class KMeans implements IAlgorithm {
     for (int i = 0; i < maxIter; i++) {
 
       for (IClusterable point : clusterable) {
-        Cluster tmpCluster = null;
+        // ukoliko je udaljenost beskonacno velika, takvu tocku dodijeli jednom klasteru, u ovom slucaju prvom
+        Cluster tmpCluster = clusters.get(0);
         double distance = Double.MAX_VALUE;
 
         for (Cluster cluster : clusters) {
