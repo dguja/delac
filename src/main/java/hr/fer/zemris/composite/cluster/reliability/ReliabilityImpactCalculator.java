@@ -27,6 +27,9 @@ public class ReliabilityImpactCalculator {
       outputNode.calculateReliability(DirectionType.PARENT);
       double oldReliability = outputNode.getReliability();
 
+      for (int i = 0; i < dataset.getInputNodeCount(); ++i) {
+        relImpact[i] = 0;
+      }
       for (int i = 0; i < model.getInputs().size(); ++i) {
         InputNode inputNode = model.getInputs().get(i);
         relImpact[idToIndex.get(inputNode.getId())] =
